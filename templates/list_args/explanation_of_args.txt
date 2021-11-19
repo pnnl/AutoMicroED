@@ -1,0 +1,314 @@
+# Words after # are comments
+
+# (note)
+# We provide two tutorial examples (e.g. Acetaminophen and Carbamazepine)
+# Please refer to <AutoMicroED git repository>/templates/mrc_is_stack/tutorial
+
+
+
+########## <begin> Tip for specifying files
+# AutoMicroED does not need pathway information (like /home/kimd999/auto_cryoEM/microED/KL/single_frames/merge_2/crystal_2/2021-03-03-133857).
+# Please put basefile name only and DO NOT add file extension (e.g. mrc or mrcs).
+
+# If input mrc is individual frame (for example, 2021-03-03-133857_0001.mrc, 2021-03-03-133857_0002.mrc and so on), then this base filename could be
+# 2021-03-03-133857_????
+
+# However, if input mrc is stack (for example, 2021-03-03-133857.mrcs), then this base filename could be
+# 2021-03-03-133857
+########## <end> Tip for specifying files
+
+
+
+########## <begin> Basic information of input mrc
+# If user a provides mrc file and imod path, AutoMicroED will populate
+these 4 features automatically (therefore, no need to specify them in
+# this args_file).
+columns 2048
+NX 2048
+NY 2048
+sections 120
+########## <end> Basic information of input mrc
+
+
+outdir <A user may update this>
+# If specified, this <outdir> is prepended to output folder name
+# For example, if 
+# outdir full_range
+# is specified, then output folder name will be full_range_<submission date-time>
+
+
+
+######## <begin> Assign a pathway of IMOD binaries (executables)
+IMOD_folder <A user needs to update this path>
+# For example, /home/scicons/cascade/apps/imod/4.10.16/IMOD/bin
+######## <end> Assign a pathway of IMOD binaries (executables)
+
+
+
+######## <begin> mrc2smv
+# Please refer (AutoMicroED git repo)/templates/explanation_of_list_files.txt for detail.
+
+
+mrc2smv_folder <A user needs to update this path>
+# For example, /home/kimd999/bin/tvips-tools-jiffies-20190827-linux64
+
+
+Bypass_movie_inspection True
+# If True, AutoMicroED will not wait a verification input from a user
+
+
+d_calibrated 1053
+# Calibrated sample-detector distance (mm) 
+
+# If d_calibrated is same across all input mrc, basefile does not need to be specified.
+# (for example) d_calibrated 1053
+
+# However, if d_calibrated is different across input mrc files, then specify as
+# (for example) d_calibrated 2021-03-03-133857_???? 1053
+
+
+d_not_calibrated 2021-03-03-133857_???? 592.77
+# Uncalibrated (as displayed in Krios) sample-detector distance (mm) 
+# Once a user enters here, a true distance (calibrated) will be added
+by AutoMicroED using the calibration coefficients specified below.
+
+
+d_calibration_coef 1.8 -14
+# This formula uses y=mx+b where y=d_calibrated and x=d_uncalibrated
+# The 1st value is m, and the 2nd value is b.
+# For example, if a user enters 430 (as Krios displays) as 'd_not_calibrated',
+# 'd_calibrated' will be 430 x 1.8 - 14 = 760
+# This example calibration formula is correct only for PNNL_Krios, it could be different for other cryo-EM machines.
+
+
+# If a user specified both 'd_calibrated' and ' d_not_calibrated',
+# AutoMicroED will not calibrate ' d_not_calibrated'. It will just use
+# specified 'd_calibrated'
+
+
+B 1
+# Binning factor.
+# Binning is assumed to be equal in the horizontal and vertical directions.
+
+
+r 2021-03-03-133857_???? 0.6
+r 2021-03-30-142654_???? 0.2
+# Rotation rate of the stage (degree/second)
+
+# If a user specifies without mrc filename as
+# r 0.2
+# then r=0.2 will be applied to all input mrc files
+
+
+voltage_of_the_microscope 200
+# kv
+
+
+
+E 2021-03-03-133857_???? 1
+E 2021-03-30-142654_???? 3
+# Exposure time (seconds/frame).
+
+# If a user specifies without mrc filename as
+# E 2
+# then E=2 will be applied to all input mrc files
+
+
+P 0.014
+# Physical side length of a square pixel (mm)
+# Same as QX/QY for xds
+
+Bypass_image_inspection True
+# if True, AutoMicroED will not wait a verification input from a user 
+######## <end> mrc2smv 
+
+
+
+
+######## <begin> xds
+# These parameters in user's args_file are assigned in the intitial XDS.INP
+# After this initial assignments, AutoMicroED updates many parameters
+until XDS works.
+# Therefore, 'XDS.INP' is the final XDS input parameters that are
+tried.
+
+mutl_core_xds True
+# If True,  AutoMicroED uses xds_par (that uses multi core/threads)
+# If False, AutoMicroED uses xds        (that uses single core/thread)
+
+EXCLUDE_DATA_RANGE 20190913-162354_???? 5 8
+EXCLUDE_DATA_RANGE 20190913-163300_???? 13 13
+# Specify any poor frame(s) that should not be included in processing.
+# First number is beginning of range, second number is end of range.
+# Refer to http://xds.mpimf-heidelberg.mpg.de/html_doc/xds_parameters.html#EXCLUDE_DATA_RANGE=
+
+
+least_completeness_overall 95
+# AutoMicroED will continue to process more datasets (crystal) until it reaches this target.
+# Higher target is recommended.
+# If a user doesn't specify 'least_completeness_overall' in this
+args_file, AutoMicroED will ask manual entry.
+    
+
+ORGX 20190913-162354_???? 1940     
+ORGX 20190913-163300_???? 1921     
+ORGY 20190913-162354_???? 2011     
+ORGY 20190913-163300_???? 2050
+# These are origins at beam center
+# If ORGY,ORGY are not specified, AutoMicroED approximates them automatically.
+
+
+INCLUDE_RESOLUTION_RANGE 99 0.0
+# If a user doesn't specify this, default is 99 0.0
+
+
+!ROTATION_AXIS 1 0 0
+# Unless a user specified this, ROTATION_AXIS will be -1 0 0 
+# Direction cosines of the rotation axis with respect to the laboratory system.
+# The length of this vector will be normalized by XDS. Used by IDXREF.
+# Examples:
+# 1 0 0 -> positive (forward) direction of spindle rotation
+# -1 0 0 -> reverse direction of spindle rotation
+
+
+
+SPACE_GROUP_NUMBER 0
+# 0 means we do not know. XDS will assign SPACE GROUP automatically. Chemical formula alone doesn't tell SPACE_GROUP_NUMBER of course.
+# Refer to https://strucbio.biologie.uni-konstanz.de/xdswiki/index.php/Old_way_of_Space_group_determination
+# If a user specifies SPACE_GROUP_NUMBER in args_file, then the user needs to specify UNIT_CELL_CONSTANTS as well (this is XDS requirement).
+# xds -> "The user can always override the automatic decisions by specifying
+ the correct space group number and unit cell constants in XDS.INP and
+ repeating the CORRECT step of XDS. This provides a simple way to rename orthorhombic cell constants if screw axes are present."
+
+ 
+UNIT_CELL_CONSTANTS=70 80 90 90 90 90
+! SPACE_GROUP_NUMBER and UNIT_CELL_CONSTANTS should always be present to avoid unexpected assignment into xds (Irina)
+
+
+STARTING_ANGLE xtal1-1merged_binned -65
+# Starting angle of tilt series
+# There is no END_ANGLE in XDS.INP because XDS figures it out automatically based on STARTING_ANGLE, OSCILLATION_RANGE and number of images
+
+
+TEST_RESOLUTION_RANGE 10 0.5
+# Resolution range (angstrom) for including reflections in the calculation of
+Rmeas when analyzing the intensity data for space group symmetry in
+the CORRECT step.
+# Example: TEST_RESOLUTION_RANGE= 10.0 4.0 -> Strong
+data between 10 to 4 angstrom resolution are used for the tests to
+obtain a strong contrast in the Rmeas values between correct and
+incorrect choices for the space group. Parameter is used by CORRECT
+
+######## <end> xds
+
+
+
+
+######## <begin> analysis after xds
+
+generate_adx_folder <A user needs to update this path>
+# This folder has generate_adx binary. 
+# (For example, /opt/apps/AutoMicroED)
+# Refer to https://gitlab.pnnl.gov/kimd999/AutoMicroED/-/blob/master/reference/protocol.md
+# If this generate_adx_folder is specified (that has generate_adx
+binary inside), generate_adx will be run even when Bypass_generate_adx_inspection is True. Therefore, a user can inspect .adx files by adxv later.
+# (of course, all it does is just running Kay's generate_adx binary)
+
+Bypass_generate_adx_inspection True
+# If this Bypass_generate_adx_inspection is not specified or specified as False, AutoMicroED will not ask a user to check .adx files
+
+######## <end> analysis after xds
+
+
+
+
+######## <begin> Assign pathways of binaries (executables)
+
+ccp4_folder  <A user needs to update this path>
+# For example, /opt/apps/ccp4-7.1/bin
+# This folder is needed for cad, f2mtz, shelxl, shelxt
+
+######## <end> Assign pathways of binaries (executables)
+
+
+
+######## <begin> phasing target
+protein FALSE
+# If this is FALSE, AutoMicroED will assume that target molecule is small molecule instead
+######## <end> phasing target
+
+
+
+######## <begin> Phasing target is small molecule -> SHELX
+SFAC C H N O
+UNIT 20 0 0 0
+
+# SFAC informs SHELX about the expected composition. 
+# UNIT informs SHELX about the expected composition's number.
+For example, 20 carbons, 0 hydrogen, 0 nitrogen and 0 oxygen.
+# UNIT information doesn't have to be that accurate.
+
+
+Generate_LATT_SYMM_from_website False
+
+# If True, LATT and SYMM will not be generated by Phenix.
+# Please look up at https://cci.lbl.gov/cctbx/shelx.html instead.
+
+# If False, LATT and SYMM will be automatically generated by phenix.
+# Therefore, there is no need to look up the above lbl website. However, a user needs to
+have Phenix installed. 
+
+######## <end> Phasing target is small molecule -> SHELX
+
+
+
+######## <begin> Phasing target is protein -> phaser
+
+ENSEMBLE_PDBFILE 8cat_no_HETATM.pdb
+# Molecular replacement model to be used by PhaserMR.
+
+ENSEMBLE_PDBFILE_IDENTITY 0.3
+# Homology model identity.
+# Providing a homologous structure whose identity > 0.3 is recommended.
+
+remove_HETATM True
+# It is recommended to remove HETATM lines for efficient phaser
+running.
+# If this is true, AutoMicroED will automatically remove HETATM
+lines.
+
+COMPOSITION_PROTEIN_SEQUENCE catalase.dat
+# Sequence file of target protein (not homology model sequence)
+
+COMPOSITION_PROTEIN_SEQUENCE_NUM 4
+# Number of copies based on sequence file.
+# (For example, if this is 4, it will model tetramer if input protein sequence
+is for monomer.)
+
+SEARCH_ENSEMBLE_NUM 2
+# Number of copies based on homology model pdb file.
+# (For example, if this is 2, it will model tetramer if input ENSEMBLE_PDBFILE has
+dimer (e.g. 2 chains).
+
+######## <end> Phasing target is protein -> phaser
+
+
+
+
+######## <begin> Prepare final report
+
+spot2pdb_folder <A user needs to update this path>
+# For example, /opt/apps/AutoMicroED
+
+
+spot2pdb_RESOLUTION_RANGE 0.5 4
+# First number is minimum resolution and second number is maximum
+resolution.
+# If numbers are not specified, spot2pdb defaults are 6-999.
+# For example, for non-protein target,
+# spot2pdb_RESOLUTION_RANGE 0.5 4
+
+# For example, for protein target,
+# spot2pdb_RESOLUTION_RANGE 3 30
+
+######## <end> Prepare final report

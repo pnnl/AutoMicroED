@@ -1,0 +1,9 @@
+! UNIT_CELL_CONSTANTS= 10 20 30 90 90 90
+! SPACE_GROUP_NUMBER= 96
+! GENERATE_FRACTION_OF_TEST_REFLECTIONS=0.05
+
+INPUT_FILE=temp.ahkl
+OUTPUT_FILE=phased_result.hkl SHELX !CCP4_I+F ! or CCP4_I or CCP4_F or SHELX or CNS
+FRIEDEL'S_LAW=FALSE ! store anomalous signal in output file even if weak
+
+! further options see http://homes.mpimf-heidelberg.mpg.de/~kabsch/xds/html_doc/xdsconv_parameters.html

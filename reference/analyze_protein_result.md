@@ -1,0 +1,14 @@
+## Analyze protein result
+   - In output/(run date-time)/(SPACE_GROUP)/(UNIT_CELL)
+      - Space group identification 
+      	 - self-explanatory in a folder name
+         - (alternatively) grep " Space group  Flack_x" -A 1 shelxt_input_from_xdsconv.lxt
+      - Unit cell constants identification
+      	 - self-explanatory in a folder name
+         - (alternatively) grep UNIT_CELL_CONSTANTS XSCALE.LP
+      - Merged COMPLETENESS of DATA identification
+         - grep COMPLETENESS -A 25 XSCALE.LP
+   - In output/(run date-time)/(SPACE_GROUP)/(UNIT_CELL)
+      - Open AUTO_target.1.mtz (Coot -> File -> Open MTZ, mmCIF, fcf or phs)
+      - Open AUTO_target.1.pdb (Coot -> File -> Open Coordinates)
+      	- (For macOS, Coot can be installed at /Applications/ccp4-7.0)

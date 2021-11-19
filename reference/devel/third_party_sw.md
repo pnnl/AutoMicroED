@@ -1,0 +1,73 @@
+## Third party software recommended
+   - Adxv
+     - Dowload from https://www.scripps.edu/tainer/arvai/adxv.html
+     - Works in macOS and Linux
+     - Refer https://www.scripps.edu/tainer/arvai/adxv/AdxvUserManual.pdf
+   - CCP4 binaries
+     - This has shelxt, shelxl
+     - Download from http://www.ccp4.ac.uk/download/#os=linux
+  - coot
+     - Refer https://strucbio.biologie.uni-konstanz.de/ccp4wiki/index.php/Coot#Installing_Coot
+     - If links are broken, install ccp4 that has coot binary (http://www.ccp4.ac.uk/download/#os=linux)
+  - Fiji
+     - Download from https://imagej.net/Fiji/Downloads
+     - Works in WindowsOS, macOS and linux
+  - IMOD
+     - Download from https://bio3d.colorado.edu/imod/
+     - (For PNNL_krios_gpu user, it is already installed in /home/scicons/cascade/apps/imod/4.10.16/IMOD/bin)
+  - matplotlib
+     - AutoMicroED shows message how to install matplotlib if there is none.
+  - phaser
+     - (Only needed for protein phasing. For small molecule, phaser is not needed)
+     - Working method (6/26/2021)
+       - (ref) https://www.phaser.cimr.cam.ac.uk/index.php/Source_Code#Building_Phaser_from_source
+       - Download http://cci.lbl.gov/cctbx_build/dev-2406/cctbx-installer-dev-2406-intel-linux-2.6-x86_64-centos6.tar.gz
+       - tar -xvf cctbx-installer-dev-2406-intel-linux-2.6-x86_64-centos6.tar.gz
+       - cd cctbx-installer-dev-2406-intel-linux-2.6-x86_64-centos6
+         - ./install --prefix=(user specified path)
+           - (for example) ./install --prefix=/opt/apps/
+         - (go to cctbx installed path's modules)
+           - (for example) cd /opt/apps/cctbx-dev-2406/modules
+         - rm -rf phaser
+         - git clone https://gitlab.developers.cam.ac.uk/scm/haematology/readgroup/phaser.git
+         - cd ../build
+         - rm -rf *
+         - vi config_modules.sh
+         - (add this)
+           - #!/bin/sh
+           - python <phenix path>../modules/cctbx_project/libtbx/configure.py phaser --enable_openmp_if_possible=True
+           - (for example)
+             - #!/bin/sh
+             - python /opt/apps/phenix-1.19.2-4158/modules/cctbx_project/libtbx/configure.py phaser --enable_openmp_if_possible=True
+         - chmod +rwx config_modules.sh
+         - ./config_modules.sh
+         - On Linux or MacOS source the file setpaths.sh, on Windows execute the file setpaths.bat
+            - For example, if it is Linux
+               - source setpaths.sh
+         - libtbx.scons -j 24 exe/phaser
+	    - "If Phaser python modules are also desired then omit the exe/phaser or exe\phaser.exe argument" 
+         - Add cctbx bin to PATH
+            - (for example,) add
+               - export PATH="/opt/apps/cctbx-dev-2406/build/bin":$PATH
+               - to ~/.bash_profile and
+               - source ~/.bash_profile
+   - tvips-tools-jiffies
+     - This has mrc2smv
+     - Download from https://cryoem.ucla.edu/downloads/snapshots
+   - xds
+     - Download from https://strucbio.biologie.uni-konstanz.de/xdswiki/index.php/Installation
+       - (for example,
+         - wget -O- https://xds.mr.mpg.de/XDS-INTEL64_Linux_x86_64.tar.gz | tar xzvf -
+       - if a user uses Linux)
+     - or from http://xds.mpimf-heidelberg.mpg.de/html_doc/downloading.html
+     - then, put
+       - export PATH="<user own folder that has XDS binaries>":$PATH
+       - in ~/.bash_profile
+
+
+## Third party software recommended
+   - PHENIX 
+     - Download from https://www.phenix-online.org/download/
+     - Then, refer https://www.phenix-online.org/documentation/install-setup-run.html
+     - AutomicroED needs PHENIX to automatically retrieve LATT and SYMM, phase intensities and refine protein model.
+     - (However, if a user uses PNNL EMSL Cascade high perfomance computing cluster, no need to install PHENIX (already installed)).
