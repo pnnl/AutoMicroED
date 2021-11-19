@@ -1,9 +1,0 @@
-OUTPUT_FILE=
-! OUTPUT-FILE MUST BE SPECIFIED FIRST
-
-INPUT_FILE=
-
-INCLUDE_RESOLUTION_RANGE=
-! Fills a role similar to the space between the blue circles in iMosflm.
-! Spots that fall in this range are classified as trusted, and used for e.g. parameter refinement.
-! The included range may need to be changed if refinement fails.
