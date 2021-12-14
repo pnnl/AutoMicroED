@@ -1,0 +1,28 @@
+HEADER    OXIDOREDUCTASE                          15-NOV-84   8CAT              
+TITLE     THE NADPH BINDING SITE ON BEEF LIVER CATALASE                         
+COMPND    MOL_ID: 1;                                                            
+SOURCE    MOL_ID: 1;                                                                                                       
+KEYWDS    OXIDOREDUCTASE, H2O2 ACCEPTOR                                         
+EXPDTA    X-RAY DIFFRACTION                                                     
+AUTHOR    M.R.N.MURTHY,T.J.REID III,A.SICIGNANO,N.TANAKA,I.FITA,M.G.ROSSMANN    
+REVDAT  11   01-NOV-17 8CAT    1       REMARK                                   
+SITE     3 AC4 15 TRP B 302  PRO B 303  HIS B 304  GLN B 441                    
+CRYST1  142.000  142.000  103.700  90.00  90.00 120.00 P 32 2 1     12          
+ORIGX1      1.000000  0.000000  0.000000        0.00000                         
+ORIGX2      0.000000  1.000000  0.000000        0.00000                         
+ORIGX3      0.000000  0.000000  1.000000        0.00000                         
+SCALE1      0.007907  0.000000 -0.001898        0.00000                         
+SCALE2      0.003954  0.007042 -0.000949        0.65200                         
+SCALE3      0.002251  0.000000  0.009377        0.83333                         
+MTRIX1   1 -1.000000  0.000000  0.000000        0.00000    1                    
+MTRIX2   1  0.000000 -1.000000  0.000000        0.00000    1                    
+MTRIX3   1  0.000000  0.000000  1.000000        0.00000    1                    
+ATOM      1  N   ASN A   3      -8.645  25.993  37.761  1.00 47.31           N  
+ATOM      2  CA  ASN A   3      -9.282  25.024  36.841  1.00 46.53           C  
+ATOM   8015  CG  ASN B 500     -17.049  18.667  40.876  1.00 58.27           C  
+ATOM   8016  OD1 ASN B 500     -18.173  18.927  40.390  1.00 58.03           O  
+ATOM   8017  ND2 ASN B 500     -15.947  18.534  40.133  1.00 58.38           N  
+TER    8018      ASN B 500                                                      
+HETATM 8019  CHA HEM A 507      13.836   4.657  14.948  1.00 20.75           C  
+HETATM 8020  CHB HEM A 507      16.621   1.284  12.861  1.00 19.09           C  
+HETATM 8021  CHC HEM A 507      20.133   2.157  16.217  1.00 20.66           C  

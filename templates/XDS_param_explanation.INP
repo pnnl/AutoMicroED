@@ -1,0 +1,111 @@
+JOB=XYCORR INIT COLSPOT IDXREF DEFPIX INTEGRATE CORRECT
+ORGX=1940
+ORGY=2011
+
+
+BACKGROUND_RANGE=1 60
+!The first and last image used for background estimation. By default, XDS uses the first 5 degree of data, but if the background is variable, it may make sense to increase this.
+
+
+CLUSTER_RADIUS=7
+!for unbinned images, for binned it is 3.5.
+
+DATA_RANGE=1 60
+
+DELPHI=10
+! Controls the number of learned profiles ("INTEGRATE").
+! The number of profiles is approximately equal to 9 * Total rotation range covered by data set/DELPHI.
+! If there are too few strong spots which could be used for learning spot profiles, it may be useful to specify a larger value for DELPHI=.
+! Example: DELPHI=5.0
+! The default value is 5 degrees of spindle rotation.
+! Parameter is used by INTEGRATE
+
+
+DETECTOR=ADSC
+
+DETECTOR_DISTANCE=1053
+! same as -d in mrc2smv
+
+DIRECTION_OF_DETECTOR_X-AXIS=1 0 0
+DIRECTION_OF_DETECTOR_Y-AXIS=0 1 0
+
+FRACTION_OF_POLARIZATION=0.98
+FRIEDEL'S_LAW=FALSE
+
+INCIDENT_BEAM_DIRECTION=0 0 1
+
+! INCLUDE_RESOLUTION_RANGE=99 0.0
+
+MAXIMUM_NUMBER_OF_PROCESSORS=8
+
+MINIMUM_NUMBER_OF_PIXELS_IN_A_SPOT=6
+
+MINIMUM_VALID_PIXEL_VALUE=1
+
+NAME_TEMPLATE_OF_DATA_FRAMES=/home/kimd999/dtemp_emslc50414_GPU/run_AutoMicroED/run_09/output/20200925_14_6_1/2/img/2_????.img
+
+NX=4096
+! Number of "fast" pixels in a data image along X. Used by XYCORR, INIT, COLSPOT, IDXREF.
+NY=4096
+! Number of "slow" pixels in a data image along Y. Used by XYCORR, INIT, COLSPOT, IDXREF.
+
+
+OFFSET=128
+
+OSCILLATION_RANGE=0.1
+! Positive multiple of 0.0001 is recommended but for ketone it is not required.
+
+OVERLOAD=65000
+
+POLARIZATION_PLANE_NORMAL=0 1 0
+
+QX=0.0140000004
+! pixels (mm) along X, same as P (physical side length of a square pixel (mm))
+QY=0.0140000004
+! pixels (mm) along Y, same as P (physical side length of a square pixel (mm))
+
+
+REFINE(IDXREF)=CELL BEAM ORIENTATION AXIS
+REFINE(INTEGRATE)=POSITION BEAM ORIENTATION
+REFINE(CORRECT)=CELL BEAM ORIENTATION AXIS
+
+! ROTATION_AXIS=1 0 0
+! Direction cosines of the rotation axis with respect to the laboratory system.
+! 1 0 0 -> positive direction of spindle rotation (for ketone tutorial)
+! -1 0 0 -> reverse direction of spindle rotation
+! 0. -1. 0. is possible as well, but Doo nam doesn't know what does this means
+
+SENSOR_THICKNESS=0.01
+
+SEPMIN=14
+! Minimum distance between diffraction spots required when depositing their vector difference in the histogram.
+! This distance is specified in multiples of the length of one pixel. The reciprocal space equivalent of the length of a detector pixel is assumed as SQRT(QX*QY)/(F*λ). For a multi segment detector the largest distance F of any pixel from the crystal is taken. Parameter is used by IDXREF
+! For unbinned images, for binned it is 7, the default value.
+
+SPACE_GROUP_NUMBER=0
+
+SPOT_RANGE=1 37
+! SPOT_RANGE is numbers of the first and last data image used for locating strong spots in the COLPROF step. This is similar to the images chosen for spotfinding in iMosflm and defaults to the same value as BACKGROUND_RANGE. Traditionally, SPOT_RANGE is the 1/2 size of the DATA_RANGE. However, if the first steps of XDS processing fail, it is best to specify a full range then as the 2nd option.)
+
+
+STARTING_ANGLE=0
+STRONG_PIXEL=6
+
+
+TEST_RESOLUTION_RANGE=10 0.5
+! Resolution range (Å) for including reflections in the calculation of Rmeas when analysing the intensity data for space group symmetry in the CORRECT step. Example: TEST_RESOLUTION_RANGE= 10.0 4.0 -> Strong data between 10 to 4 Å resolution are used for the tests in order to obtain a strong contrast in the Rmeas values between correct and incorrect choices for the space group. Parameter is used by CORRECT
+
+
+TRUSTED_REGION=0.0 1.4142
+! since we actually have a square detector
+! the default value if not listed in PARAMS should be “TRUSTED_REGION=0.0 1.4142
+
+
+UNIT_CELL_CONSTANTS=68.15   169.75   193.81  90.000  90.058  90.000
+VALUE_RANGE_FOR_TRUSTED_DETECTOR_PIXELS=6000. 30000.
+
+
+X-RAY_WAVELENGTH=0.0250793416
+! X-ray (electron for microED) wavelength of the incident beam (Å).
+! Automatically assigned by AutoMicroED based on kv
+! Used by IDXREF

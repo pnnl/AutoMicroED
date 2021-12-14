@@ -1,0 +1,78 @@
+
+######## <begin> Assign a pathway of IMOD binaries (executables)
+IMOD_folder /home/scicons/cascade/apps/imod/4.10.16/IMOD/bin/
+######## <end> Assign a pathway of IMOD binaries (executables)
+
+
+######## <begin> mrc2smv
+mrc2smv_folder /opt/apps/tvips-tools-jiffies-20190827-linux64
+
+Bypass_movie_inspection False
+
+d_not_calibrated 165749merged 430
+d_not_calibrated 170629merged 430
+
+d_calibration_coef 1.8 -14.53
+
+B 2
+
+r 0.6
+
+voltage_of_the_microscope 300
+
+E 1
+
+P 0.028
+
+Bypass_image_inspection False
+######## <end> mrc2smv 
+
+
+######## <begin> xds
+Bypass_spot2pdb_inspection False
+
+multi_core_xds False
+
+least_completeness_overall 95
+
+ROTATION_AXIS -1 0 0
+
+SPACE_GROUP_NUMBER 0
+
+STARTING_ANGLE 165749merged -65
+STARTING_ANGLE 170629merged -65
+
+TEST_RESOLUTION_RANGE 4 0.5
+######## <end> xds
+
+
+######## <begin> analysis after xds
+generate_adx_folder /opt/apps/AutoMicroED/
+
+Bypass_generate_adx_inspection False
+######## <end> analysis after xds
+
+
+######## <begin> Assign pathways of binaries (executables)
+ccp4_folder /opt/apps/ccp4-7.1/bin
+######## <end> Assign pathways of binaries (executables)
+
+
+######## <begin> phasing target
+protein FALSE
+######## <end> phasing target
+
+
+######## <begin> Phasing target is small molecule -> SHELX
+SFAC C H N O
+UNIT 8 9 1 2
+
+Generate_LATT_SYMM_from_website False
+######## <end> Phasing target is small molecule -> SHELX
+
+
+######## <begin> Prepare final report
+spot2pdb_folder /opt/apps/AutoMicroED/
+
+spot2pdb_RESOLUTION_RANGE 0.5 4
+######## <end> Prepare final report

@@ -1,0 +1,17 @@
+## For protein after merging XDS_ASCII.HKL files
+   - f2mtz
+      - function: convert a free- or fixed-format formatted reflection file to MTZ format. It should be used on merged data in the later stages of structure determination
+      - input: XDS_ASCII_merged.hkl
+      - output: from_f2mtz.mtz
+      - reference: http://legacy.ccp4.ac.uk/html/f2mtz.html 
+   - phenix.phaser
+      - function: phase the measured intensities with molecular replacement
+      - input: from_f2mtz.mtz, homologous protein structure, target protein sequence
+      - output: newly generated protein structure based on measured structure factor
+      - reference: https://www.phaser.cimr.cam.ac.uk/index.php/MR_using_keyword_input
+   - phenix.refine
+      - function: refine structure using electron scattering factor
+      - input: from_f2mtz.mtz (same file as used for phaser MR)
+      - output: newly refined protein structure (..._refine_001.pdb), slightly updated mtz file
+      - reference: http://www.phenix-online.org/documentation/reference/refinement.html#giving-parameters-on-the-command-line-or-in-files
+      - note: AutoMicroED runs initial/first round of refinement only and reports R-free and R-work. Users are advised to rebuild structure by COOT before another round of refinement.

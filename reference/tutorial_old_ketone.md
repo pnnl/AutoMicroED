@@ -1,0 +1,19 @@
+## Tutorial
+   - mkdir tuto
+      - (this working folder doesn't have to be under a new folder that is created by git clone)
+   - cd tuto
+      - mkdir mrc
+   - (prepare mrc)
+      - (in PNNL_HPC_Cascade or PNNL_Krios_GPU)
+         - cp /home/kimd999/auto_cryoEM/microED/keep_ketone_tutorial/20190913-??????.mrc mrc 
+      - (in other computer)
+         - (please prepare mrc files by yourself)
+   - ls $PWD/mrc/*.mrc > mrc_file.list
+   - cp (git repo)/templates/args_file/example/input_mrc_is_stack/args_file_tutorial_ketone.txt .
+      - (Please update (git repo) according to user's git clone)
+         - For example, if a user did git clone at /home/powe385, then (git repo) is /home/powe385/AutoMicroED
+   - python (git repo)/run_all.py mrc_file.list args_file_tutorial_ketone.txt
+      - (If a user made an alias like below tip then simply run "MicroED_krios mrc_file.list" or "MicroED_cascade mrc_file.list")
+   - running time
+      - With PNNL_HPC_krios_gpu and Macbook pro, it took 6~7 minutes to complete.
+      - With PNNL_HPC_Cascade, it took 18 minutes to complete (needed more time for job launching).
