@@ -1,6 +1,7 @@
 # AutoMicroED
 
-## This github repo is for manuscript submitted to BioRxiv on 12/14/2021. Specific location of tutorial file location will be updated once available.
+## This github repo is for https://www.biorxiv.org/content/10.1101/2021.12.13.472146v1
+## Specific location of tutorial file location will be updated once available.
 
 ## How to install
    - [link](./reference/install.md)
