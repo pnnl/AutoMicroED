@@ -1,5 +1,5 @@
 ## How to install
-   - (at commandline) git clone https://gitlab.pnnl.gov/kimd999/AutoMicroED.git
+   - (at commandline) git clone https://github.com/pnnl/AutoMicroED.git
       - (This git clone is required only once. This does not need to be repeated everytime a user needs to run AutoMicroED.)
    - Install (once)
       - For more efficient library management (do not complicate other environments), we recommend 
@@ -23,4 +23,3 @@
       - [Add a new SSH key to your GitHub account](https://docs.github.com/en/github/authenticating-to-github/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account)
    - If user's macOS shows, “xcode-select: note: no developer tools were found at '/Applications/Xcode.app', requesting install. Choose an option in the dialog to download the command line developer tools.”
       - Download commandline as instructed (this may take ~7 minutes)
-   - Git related questions can be answered by gitlab@pnnl.gov
