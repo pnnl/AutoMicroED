@@ -1,7 +1,11 @@
 # AutoMicroED
 
-### This github repo is for https://www.biorxiv.org/content/10.1101/2021.12.13.472146v1
-### Location of tutorial files will be updated once available.
+### This github repo is for AutoMicroED paper
+   - [link](https://www.biorxiv.org/content/10.1101/2021.12.13.472146v1)
+
+### Location of tutorial files
+   - [link](https://doi.org/10.25582/data.2021-08.2299309/1838042)
+   - (please register EMSL account)
 
 ## How to install
    - [link](./reference/install.md)
