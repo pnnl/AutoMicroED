@@ -18,7 +18,7 @@
    - [explanation](./reference/tutorial.md)
    - [file](https://doi.org/10.25582/data.2021-08.2299309/1838042)
       - (please register EMSL account at a directed website)
-      - (This EMSL login website can be accessed from Windows PC, and smartphone. It is not clear whether mac can access though.)
+      - (This EMSL login website can be accessed from Windows PC, macBook and smartphone. However, PNNL specific laptops cannot access as of 1/4/2022)
 
 ## Tip
    - [link](./reference/tip.md)
