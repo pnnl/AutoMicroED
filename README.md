@@ -15,9 +15,9 @@
       - shows what file is needed
 
 ## Tutorial
-   - [explanation link](./reference/tutorial.md)
-   - [tutorial file link](https://doi.org/10.25582/data.2021-08.2299309/1838042)
-      - (please register EMSL account)
+   - [explanation](./reference/tutorial.md)
+   - [file](https://doi.org/10.25582/data.2021-08.2299309/1838042)
+      - (please register EMSL account at a directed website)
 
 ## Tip
    - [link](./reference/tip.md)
