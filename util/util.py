@@ -425,18 +425,18 @@ def check_movie_quality():
 
 
 def closing_remark(args_dict):
-  flog         ("See https://gitlab.pnnl.gov/kimd999/AutoMicroED/-/blob/master/reference/protocol.md#spot2pdb to know how to analyze spot2pdb result.\n", args_dict['logfile_name_w_abs_path'])
-  flog_wo_print("See https://gitlab.pnnl.gov/kimd999/AutoMicroED/-/blob/master/reference/protocol.md#spot2pdb to know how to analyze spot2pdb result.\n", args_dict['summary_logfile_name_w_abs_path'])
+  flog         ("See https://github.com/pnnl/AutoMicroED/blob/master/reference/protocol.md#spot2pdb to know how to analyze spot2pdb result.\n", args_dict['logfile_name_w_abs_path'])
+  flog_wo_print("See https://github.com/pnnl/AutoMicroED/blob/master/reference/protocol.md#spot2pdb to know how to analyze spot2pdb result.\n", args_dict['summary_logfile_name_w_abs_path'])
 
   if (
      (str(args_dict['protein']).upper() == "FALSE") 
      or (str(args_dict['protein']).upper() == "F") 
      ):    
-    flog("\nSee https://gitlab.pnnl.gov/kimd999/AutoMicroED/-/blob/master/reference/analyze_small_molecule_result.md to know how to analyze result.\n", args_dict['logfile_name_w_abs_path'])
-    flog_wo_print("See https://gitlab.pnnl.gov/kimd999/AutoMicroED/-/blob/master/reference/analyze_small_molecule_result.md to know how to analyze result.", args_dict['summary_logfile_name_w_abs_path'])
+    flog("\nSee https://github.com/pnnl/AutoMicroED/blob/master/reference/analyze_small_molecule_result.md to know how to analyze result.\n", args_dict['logfile_name_w_abs_path'])
+    flog_wo_print("See https://github.com/pnnl/AutoMicroED/blob/master/reference/analyze_small_molecule_result.md to know how to analyze result.", args_dict['summary_logfile_name_w_abs_path'])
   else:
-    flog("\nSee https://gitlab.pnnl.gov/kimd999/AutoMicroED/-/blob/master/reference/analyze_protein_result.md to know how to analyze result.\n", args_dict['logfile_name_w_abs_path'])
-    flog_wo_print("See https://gitlab.pnnl.gov/kimd999/AutoMicroED/-/blob/master/reference/analyze_protein_result.md to know how to analyze result.", args_dict['summary_logfile_name_w_abs_path'])
+    flog("\nSee https://github.com/pnnl/AutoMicroED/blob/master/reference/analyze_protein_result.md to know how to analyze result.\n", args_dict['logfile_name_w_abs_path'])
+    flog_wo_print("See https://github.com/pnnl/AutoMicroED/blob/master/reference/analyze_protein_result.md to know how to analyze result.", args_dict['summary_logfile_name_w_abs_path'])
 ######### end of def closing_remark()
 
  
@@ -769,7 +769,7 @@ def per_each_mrc_file_both_single_and_multiple_sections (args_dict, mrc_w_path, 
     print_this = print_this + "Either specify it args_file (for later AutoMicroED run, for example, /opt/apps/AutoMicroED)"
     print_this = print_this + "\nor enter a full PATH of generate_adx now."
     print_this = print_this + "\n\tRefer (git repo)/templates/args_file/explanation_of_args.txt for an example of generate_adx_folder specification."
-    print_this = print_this + "\n\tRefer https://gitlab.pnnl.gov/kimd999/AutoMicroED/-/blob/master/reference/protocol.md to know how to compile generate_adx"
+    print_this = print_this + "\n\tRefer https://github.com/pnnl/AutoMicroED/blob/master/reference/protocol.md to know how to compile generate_adx"
     flog(print_this, args_dict['logfile_name_w_abs_path'])
     generate_adx_folder = receive_from_user("generate_adx_folder")
     args_dict['generate_adx_folder'] = generate_adx_folder
@@ -780,7 +780,7 @@ def per_each_mrc_file_both_single_and_multiple_sections (args_dict, mrc_w_path, 
   command_for_generate_adx = str(os.path.join(str(args_dict['generate_adx_folder']), str("generate_adx")))
   if (os.path.exists(command_for_generate_adx) == False):
     print_this = str(command_for_generate_adx) + " doesn't exist."
-    print_this = print_this + "\n\tRefer https://gitlab.pnnl.gov/kimd999/AutoMicroED/-/blob/master/reference/protocol.md to know how to compile generate_adx"
+    print_this = print_this + "\n\tRefer https://github.com/pnnl/AutoMicroED/blob/master/reference/protocol.md to know how to compile generate_adx"
     flog(print_this, args_dict['logfile_name_w_abs_path'])
     flog_wo_print(print_this, args_dict['summary_logfile_name_w_abs_path'])
     return "failed"
@@ -791,7 +791,7 @@ def per_each_mrc_file_both_single_and_multiple_sections (args_dict, mrc_w_path, 
   print_this = "generate_adx is ran"
   flog(print_this, args_dict['logfile_name_w_abs_path'])
 
-  print_this = "Refer https://gitlab.pnnl.gov/kimd999/AutoMicroED/-/blob/master/reference/protocol.md to know how to analyze."
+  print_this = "Refer https://github.com/pnnl/AutoMicroED/blob/master/reference/protocol.md to know how to analyze."
   flog(print_this, args_dict['logfile_name_w_abs_path'])
 
 
@@ -871,7 +871,7 @@ def per_each_mrc_file_both_single_and_multiple_sections (args_dict, mrc_w_path, 
   flog(print_this, args_dict['logfile_name_w_abs_path'])
   '''
   
-  print_this = "Refer https://gitlab.pnnl.gov/kimd999/AutoMicroED/-/blob/master/reference/protocol.md#spot2pdb to visualize with coot"
+  print_this = "Refer https://github.com/pnnl/AutoMicroED/blob/master/reference/protocol.md#spot2pdb to visualize with coot"
   flog(print_this, args_dict['logfile_name_w_abs_path'])
 
   '''

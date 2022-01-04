@@ -219,7 +219,7 @@ incorrect choices for the space group. Parameter is used by CORRECT
 generate_adx_folder <A user needs to update this path>
 # This folder has generate_adx binary. 
 # (For example, /opt/apps/AutoMicroED)
-# Refer to https://gitlab.pnnl.gov/kimd999/AutoMicroED/-/blob/master/reference/protocol.md
+# Refer to https://github.com/pnnl/AutoMicroED/blob/master/reference/protocol.md
 # If this generate_adx_folder is specified (that has generate_adx
 binary inside), generate_adx will be run even when Bypass_generate_adx_inspection is True. Therefore, a user can inspect .adx files by adxv later.
 # (of course, all it does is just running Kay's generate_adx binary)
