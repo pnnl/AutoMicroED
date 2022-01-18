@@ -12,6 +12,19 @@
          - compile generate_adx (optional)
             - [copy generate_adx_source_file to user's folder](https://strucbio.biologie.uni-konstanz.de/xdswiki/index.php/Generate_adx)
             - gfortran -O -C generate_adx.f90 -o generate_adx
+      - Estimated install time: 5 minutes with fresh conda environment set-up. Less time without conda set-up.
+
+
+### Make sure needed third party software are installed 
+   - [Refer](./third_party_sw.md)
+      - (Some software may not be installed in WindowsOS.)
+      - Designate PATH for tvips, XDS and ccp4
+         - For example, for bash user
+            - In macOS
+               - export PATH="/Users/kimd999/research/microED/dn_try/tvips-tools-jiffies-20191209-macos64/":$PATH
+               - export PATH="/Users/kimd999/bin/XDS-OSX_64/":$PATH
+               - export PATH="/Applications/ccp4-7.0/bin/":$PATH
+
 
 ### Git troubleshooting
    - If user's OS doesn't have git

@@ -41,12 +41,4 @@
       - Then, copy for example
          - rsync -aPuv (source folder) kimd999@cascade.emsl.pnl.gov:~/(target folder)
          - (or) scp -r (source folder) kimd999@cascade.emsl.pnl.gov:~/(target folder)
-   - Make sure needed third party software are installed 
-      - [Refer](./third_party_sw.md)
-         - Some software may not be installed in WindowsOS
-         - Designate PATH for tvips, XDS and ccp4
-            - For example, for bash user
-               - In macOS
-                  - export PATH="/Users/kimd999/research/microED/dn_try/tvips-tools-jiffies-20191209-macos64/":$PATH
-                  - export PATH="/Users/kimd999/bin/XDS-OSX_64/":$PATH
-                  - export PATH="/Applications/ccp4-7.0/bin/":$PATH
+   

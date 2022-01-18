@@ -1,7 +1,7 @@
 # AutoMicroED
 
-### This github repo is for AutoMicroED paper
-   - [link](https://www.biorxiv.org/content/10.1101/2021.12.13.472146v1)
+## This github repo is for AutoMicroED paper
+   - [link](https://www.biorxiv.org/content/10.1101/2021.12.13.472146v2)
 
 ## How to install
    - [link](./reference/install.md)

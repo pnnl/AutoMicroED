@@ -28,11 +28,5 @@
       - Recommended path: Any path except that has space ( ) in path or too long path name.
    -  When running on PNNL_HPC_Cascade, please contact us first to allocate charging account.
 
-## Confirmed operating system
-   - MacOS
-   - Linux
-   - WindowsOS may not work since there is no guarantee that third party software will work for WindowsOS (e.g. tvips-tools-jiffies, xds)
-   - Supports CPU only
-
 ## Troubleshooting
    - [link](./reference/troubleshooting.md)
