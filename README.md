@@ -6,13 +6,14 @@
 ## How to install
    - [link](./reference/install.md)
 
-## How to prepare to run
-   - [link](./reference/how_to_prepare_to_run.md)
-
 ## How to run
-   - python (git_repo)/run_all.py
-      - (For example) python ~/script/python/cryoEM/AutoMicroED/run_all.py
-      - shows what file is needed
+   - (basic)
+      - python (git_repo)/run_all.py
+         - (For example) python ~/script/python/cryoEM/AutoMicroED/run_all.py
+         - shows what file is needed
+   - (advanced, recommended)
+      - python (git_repo)/run_all.py mrc.list arg.list
+         - See [How to prepare to run](./reference/how_to_prepare_to_run.md) on generating mrc.list and arg.txt
 
 ## Confirmed operating system
    - MacOS version 10.14.6 or newer
@@ -23,10 +24,11 @@
 ## Tutorial
    - [link](./reference/tutorial.md)
 
-## Tip
+## Tip/Troubleshooting
    - [link](./reference/tip.md)
 
-## Protocol
+## Overview of AutoMicroED
    - [link](./reference/protocol.md)
 
 Authors: James Evans, Irina Novikova, Doo Nam Kim, Samantha Powell
+Pleae email doonam.kim@pnnl.gov or James.Evans@pnnl.gov for inquiries/suggestions.

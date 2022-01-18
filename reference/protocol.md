@@ -105,6 +105,6 @@ Could not connect to any X display."
    - Output (small molecule): shelxt_input_from_xdsconv.hkl SHELX !CCP4_I+F ! or CCP4_I or CCP4_F or SHELX or CNS
    - Output (protein): ready_for_f2mtz.hkl CCP4_I+F
 ## (for small molecule)
-   - [link](./reference/for_small_molecule.md)
+   - [link](./reference/analyze_small_molecule_result.md)
 ## (for protein)
-   - [link](./reference/for_protein.md)
+   - [link](./reference/analyze_protein_result.md)

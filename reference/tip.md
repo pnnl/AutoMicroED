@@ -23,10 +23,11 @@
          - Number of columns, rows, sections .....    4096    4096     147
       - this mrcs has 147 images (e.g. I merged 71 and 76 images)
 
-## Tip for PNNL only
-   -  When running on PNNL laptop, make sure that you do your processing not on Desktop. OneDrive sync causes issues.
-      - Recommended path: Any path except that has space ( ) in path or too long path name.
-   -  When running on PNNL_HPC_Cascade, please contact us first to allocate charging account.
+## Tip for File System Path
+   -  run AutoMicroED on path that has no space ( ) in it.
+      - For example, do not run AutoMicroED at "Desktop" or "OneDrive sync" since often these have () in PATH.
+   - Also, do not run AutoMicroED at a folder has too long path name.
+
 
 ## Troubleshooting
    - [link](./reference/troubleshooting.md)
