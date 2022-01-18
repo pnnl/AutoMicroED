@@ -31,4 +31,5 @@
    - [link](./reference/protocol.md)
 
 Authors: James Evans, Irina Novikova, Doo Nam Kim, Samantha Powell
-Pleae email doonam.kim@pnnl.gov or James.Evans@pnnl.gov for inquiries/suggestions.
+
+Please email doonam.kim@pnnl.gov or James.Evans@pnnl.gov for inquiries/suggestions.
