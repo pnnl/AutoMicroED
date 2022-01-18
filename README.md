@@ -14,11 +14,14 @@
       - (For example) python ~/script/python/cryoEM/AutoMicroED/run_all.py
       - shows what file is needed
 
+## Confirmed operating system
+   - MacOS version 10.14.6 or newer
+   - CentOS Linux 7 or newer
+   - WindowsOS may not work since there is no guarantee that third party software will work for WindowsOS (e.g. tvips-tools-jiffies, xds)
+   - Supports CPU only (e.g. no GPU)
+
 ## Tutorial
-   - [explanation](./reference/tutorial.md)
-   - [file](https://doi.org/10.25582/data.2021-08.2299309/1838042)
-      - (please register EMSL account at a directed website)
-      - (This EMSL login website can be accessed from Windows PC, macBook and smartphone.)
+   - [link](./reference/tutorial.md)
 
 ## Tip
    - [link](./reference/tip.md)
@@ -26,4 +29,4 @@
 ## Protocol
    - [link](./reference/protocol.md)
 
-Contact doonam.kim@pnnl.gov or James.Evans@pnnl.gov for inquiry.
+Authors: James Evans, Irina Novikova, Doo Nam Kim, Samantha Powell
