@@ -16,4 +16,3 @@
       - CANNOT OPEN OR READ FILE bin1_01.tmp
          - Presumably, the independent jobs supposed to have been started in the INTEGRATE step have not run properly.
          - This could be due to incomplete installation of XDS where some of the executables of the package are not included in the search path.
-   - (welcome to email doonam.kim@pnnl.gov for technical inquiries/suggestions)
