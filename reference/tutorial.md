@@ -18,4 +18,4 @@
       - With one linux system, Acetaminophen tutorial took 9 minutes.
       - With one linux system, Carbamazepine tutorial took 21 minutes.
    - Expected outcome
-      - [Please refere paper image](https://www.biorxiv.org/content/10.1101/2021.12.13.472146v2)
+      - [Please refer paper image](https://www.biorxiv.org/content/10.1101/2021.12.13.472146v2)
