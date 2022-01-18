@@ -30,4 +30,4 @@
 
 
 ## Troubleshooting
-   - [link](./reference/troubleshooting.md)
+   - [link](./troubleshooting.md)
