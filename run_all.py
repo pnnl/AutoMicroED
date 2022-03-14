@@ -110,10 +110,6 @@ if (__name__ == "__main__") :
   ############### <end> read args file and populate args_dict
 
 
-  ##print (f(args_dict['protein']).upper():{(args_dict['protein']).upper()}")
-  #a=b
-
-
   print_this = "working_folder_abs_path:" + str(working_folder_abs_path)
   flog(print_this, args_dict['logfile_name_w_abs_path'])
   flog_wo_print(print_this, args_dict['summary_logfile_name_w_abs_path'])
@@ -157,9 +153,9 @@ if (__name__ == "__main__") :
     for mrc_file in mrc_file_list_opened:
       if ".mrc" in mrc_file:
         mrc_w_path = mrc_file.rstrip()
-        columns, sections = count_columns_sections_in_each_mrc_file(args_dict, mrc_w_path)
+        columns, sections = count_columns_sections_in_each_mrc_file_by_mrcfile(args_dict, mrc_w_path)
         if (columns == None) or (columns == False):
-          print_this = "columns of mrc is either None or False according to imod's header. Is this mrc correct?"
+          print_this = "columns of mrc is either None or False. Is this mrc input file correct?"
           flog(print_this, args_dict['logfile_name_w_abs_path'])
           flog_wo_print(print_this, args_dict['summary_logfile_name_w_abs_path'])
           exit(1)
@@ -168,6 +164,7 @@ if (__name__ == "__main__") :
         args_dict['NY'] = args_dict['columns']
         args_dict['sections'] = sections
         break
+
       else:
         break
     mrc_file_list_opened.close()
@@ -798,8 +795,6 @@ if (__name__ == "__main__") :
   
   os.mkdir("archive")
   
-  command = "mv header_of_last_input_mrc archive"
-  os.system(command)
 
   command = "cp " + str(args_dict['args_file_w_abs_path']) + " archive/user_specified_args_file.txt"
   os.system(command)

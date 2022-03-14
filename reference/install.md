@@ -7,8 +7,7 @@
          - conda activate (conda name) 
          - then, install below.
       - However, it is fine to install without conda environment management.
-         - pip install envbash
-         - conda install matplotlib
+         - pip install -r <user path>/requirements.txt
          - compile generate_adx (optional)
             - [copy generate_adx_source_file to user's folder](https://strucbio.biologie.uni-konstanz.de/xdswiki/index.php/Generate_adx)
             - gfortran -O -C generate_adx.f90 -o generate_adx

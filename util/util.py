@@ -2,6 +2,7 @@ from datetime import datetime as dt
 from math import isclose
 import argparse, codecs, glob, os, platform, random, shutil, signal, subprocess, sys, time
 import mrc2smv, protein, shelx, xds, xdsconv, xscale
+import mrcfile
 
 try:
   from envbash import load_envbash
@@ -63,25 +64,6 @@ print_this = print_this + "\nJust press enter key once images are inspected.\n"
 print_this = print_this + "\t(note) Add \"Bypass_image_inspection True\" in an argument file if a user wants to skip this manual check.\n"
 print_this_for_image_inspection = print_this + "\t(note) Enter \"bypass\" now if a user wants to add \"Bypass_image_inspection True\" in an argument file.\n"
 ## <end> writing print_this_for_image_inspection
-
-
-## <begin> writing print_this_for_ORGXY
-print_this = "\n\t(note) A user may locate ORGX and ORGY by opening *.img or *.mrc files by Adxv."
-print_this = print_this + "\n\t(macOS) Adxv can be installed in /Applications"
-
-print_this = print_this + "\n\t(after ssh at linux machine) cd /opt/apps/bin (and) ./adxv.x86_64CentOS7 (enter to launch adxv)"
-print_this = print_this + "\n\t\t(when ssh to linux machine by iterm2) In order to open Adxv in user's computer rather than krios GPU machine itself, a user needs to ssh with either -X or -Y. ssh with -XC doesn't work"
-print_this = print_this + "\n\t\t(when ssh to linux machine by iterm2) For example, ssh -X kimd999@kriosgpu.emsl.pnl.gov works. However, ssh -XC kimd999@kriosgpu.emsl.pnl.gov doesn't work"
-print_this = print_this + "\n\t\t(when ssh to linux machine by x11-x-term) In order to open Adxv in user's computer rather than krios GPU machine itself, a user needs to ssh with -Y only. ssh with -XC or -X don't work"
-print_this = print_this + "\n\t\t(when ssh to linux machine by x11-x-term) For example, ssh -Y kimd999@kriosgpu.emsl.pnl.gov works."
-print_this = print_this + "\n\t These result image files (*.img) are in output/<date-time of this job>/<mrc file list prefix>/img"
-print_this = print_this + "\n\t (note) Example cross is in empiar-10293_adxv.png in reference folder."
-print_this = print_this + "\n\t\t(reference) https://strucbio.biologie.uni-konstanz.de/xdswiki/index.php/Finding_out_ORGX_ORGY)"
-print_this = print_this + "\n\t\t The error you make in the determination of ORGX ORGY should in principle be less than half of the distance between two spots."
-print_this = print_this + "\n\t\t If you have a reasonable estimate (from one of the methods above), but the error is bigger than that, you can still find out the true ORGX ORGY by inspecting IDXREF.LP."
-print_this = print_this + "\n\t\t This works best if COLSPOT has seen a significant fraction of all frames. This procedure is documented."
-print_this_for_ORGXY = print_this + "\n\t\t (note) At least with Doo Nam's experience, finding true ORGX ORGY by inspecting IDXREF.LP was not feasible."
-## <end> writing print_this_for_ORGXY
 
 
 message_for_CORRECT_LP_not_found = \
@@ -248,12 +230,6 @@ def args_file_parse(args_dict):
     elif (splited_line[0] == "Generate_LATT_SYMM_from_website"):
       args_dict['Generate_LATT_SYMM_from_website'] = splited_line[1]
     
-    elif (splited_line[0] == "IMOD_folder"):
-      if (os.path.isdir(splited_line[1]) == False):
-        print_this = splited_line[1] + " doesn't exist. Please correct IMOD_folder."
-        flog(print_this, args_dict['logfile_name_w_abs_path'])
-        exit(1)
-      args_dict['IMOD_folder'] = splited_line[1]
     
     elif ((splited_line[0] == "INCLUDE_RESOLUTION_RANGE") or (line[:25] == "INCLUDE_RESOLUTION_RANGE=")):
       args_dict['INCLUDE_RESOLUTION_RANGE'] = '' # this is needed
@@ -438,56 +414,18 @@ def closing_remark(args_dict):
     flog("\nSee https://github.com/pnnl/AutoMicroED/blob/master/reference/analyze_protein_result.md to know how to analyze result.\n", args_dict['logfile_name_w_abs_path'])
     flog_wo_print("See https://github.com/pnnl/AutoMicroED/blob/master/reference/analyze_protein_result.md to know how to analyze result.", args_dict['summary_logfile_name_w_abs_path'])
 ######### end of def closing_remark()
+  
 
- 
-def count_columns_sections_in_each_mrc_file(args_dict, mrc_w_path):
-  try:
-    path_of_header = subprocess.check_output(["which", "header"]).decode('UTF-8')
-    print_this = "PATH of IMOD header executable:" + str(path_of_header)
-    flog(print_this, args_dict['logfile_name_w_abs_path'])
-    command = "header " + str(mrc_w_path) + " > header_of_last_input_mrc"
-  except:
-    if ('IMOD_folder' in args_dict.keys()):
-      command = str(os.path.join(str(args_dict['IMOD_folder']), 'header')) + " " + str(mrc_w_path) + " > header_of_last_input_mrc"
-    else:
-      flog("AutoMicroED can't find IMOD's header executable in user's PATH", args_dict['logfile_name_w_abs_path'])
-      flog("Add its IMOD folder to $PATH.", args_dict['logfile_name_w_abs_path'])
-      write_this = '''Or specify it in AutoMicroED's arg_file.
-      For example, add
-      IMOD_folder /home/scicons/cascade/apps/imod/4.10.16/IMOD/bin'''
-      flog(write_this, args_dict['logfile_name_w_abs_path'])
-      return False, False
-    
-  flog(command, args_dict['logfile_name_w_abs_path'])
-  os.system(command)
+def count_columns_sections_in_each_mrc_file_by_mrcfile(args_dict, mrc_w_path):
+  mrc = load_density_file(mrc_w_path)
+  print (f"mrc.data.shape:{mrc.data.shape}") ##(120, 2048, 2048)
+  columns = mrc.data.shape[1]
+  sections = mrc.data.shape[0]
+  print ("columns: " + str(columns)) #2048
+  print ("sections: " + str(sections)) # 120
   
-  f_in  = codecs.open("header_of_last_input_mrc", 'r')
-  columns = None
-  sections = None
-  for line in f_in:
-    splited_line = line.split()
-    if (len(splited_line) == 9):
-      columns = splited_line[6]
-      sections = splited_line[8]
-      f_in.close()
-      break 
-  
-  print ("columns: " + str(columns))
-  print ("sections: " + str(sections))
-  if (columns == None):
-      print_this = "Retrieval of information about columns and sections by IMOD failed for user's " + str(mrc_w_path)
-      print_this = print_this + "\nPlease set IMOD enviroment."
-      print_this = print_this + "\nFor example, run these in commandline (more ideally put these in ~/.bashrc)."
-      print_this = print_this + "\n\texport IMOD_DIR=\"/home/scicons/cascade/apps/imod/4.10.16/imod_4.10.16\""
-      print_this = print_this + "\n\tbash $IMOD_DIR/IMOD-linux.sh"
-      #print_this = print_this + "\nThis example works in PNNL cascade/krios_GPU bash environment."
-      print_this = print_this + "\nTherefore, update foldername as a user installed IMOD accordingly"
-      print_this = print_this + "\nAfterwards, run AutoMicroED again."
-      flog(print_this, args_dict['logfile_name_w_abs_path'])
-      
   return columns, sections
-######## end of def count_columns_sections_in_each_mrc_file(mrc_w_path):  
-  
+######## end of count_columns_sections_in_each_mrc_file_by_mrcfile(args_dict, mrc_w_path):  
 
 
 def file_size(fname):
@@ -657,6 +595,24 @@ def launch_cascade_jobs(new_slurm_script_file_name):
   print (command)
   os.system(command)
 ########## end of def launch_cascade_jobs(new_slurm_script_file_name):
+
+
+def load_density_file(fname):
+    """load a .mrc file using the mrcfile package
+
+    Args:
+        fname ([str]): filename / filepath
+
+    Returns:
+        [mrcfile object]: MRC data 
+    """ 
+    # load .mrc tomogram file as a MRC object which has header and data properties. 
+    # see: https://mrcfile.readthedocs.io/en/latest/usage_guide.html 
+    mrc = mrcfile.mmap(fname, mode=u'r')  # memory mapped mode for large files
+    #print(f"mrc.is_image_stack():{mrc.is_image_stack()}")  # check if mrc is an image stack 
+    #print(f"mrc.is_volume():{mrc.is_volume()}")  # check if mrc is a volume
+    return mrc
+##### end of def load_density_file(fname):
 
 
 def mrc2png(args_dict, ORGX_ORGY, mrc_w_path):
@@ -947,7 +903,6 @@ def phasing(args_dict):
     return_from_see_LLG_TFZ = protein.see_LLG_TFZ(args_dict)
     return return_from_see_LLG_TFZ
 #################### end of def phasing(logfile_name_w_abs_path)
-
 
 
 def receive_from_user(parameter):

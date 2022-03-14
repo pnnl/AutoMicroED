@@ -12,8 +12,6 @@
    - Fiji
      - Download from https://imagej.net/Fiji/Downloads
      - Works in WindowsOS, macOS and linux
-   - IMOD
-     - Download from https://bio3d.colorado.edu/imod/
    - matplotlib
      - AutoMicroED shows message how to install matplotlib if there is none.
    - tvips-tools-jiffies
@@ -30,10 +28,6 @@
        - in ~/.bash_profile
 
 ## Third party software recommended.
-   - eman2
-     - Download from https://blake.bcm.edu/emanwiki/EMAN2
-       - (SPARX/SPHIRE is not needed to be installed)
-     - AutoMicroED needs to use e2proc2d.py of eman2 for automatic ORGX/ORGY estimation.  
    - PHENIX 
      - Download from https://www.phenix-online.org/download/
      - Then, refer https://www.phenix-online.org/documentation/install-setup-run.html
