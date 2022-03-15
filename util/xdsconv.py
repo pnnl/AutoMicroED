@@ -4,23 +4,6 @@ import argparse, codecs, glob, os, platform, random, shutil, signal, subprocess,
 import mrc2smv, protein, shelx, xds, xscale
 import util
 
-try:
-  from envbash import load_envbash
-except:
-  print ("envbash not found, install it by typing")
-  print ("\tpip install envbash")
-  print ("\tReference: https://pypi.org/project/envbash/")
-  exit(1)
-
-try:
-  import matplotlib.image as mpimg
-except:
-  print ("matplotlib not found, install it.")
-  print ("\tconda install matplotlib")
-  print ("\t\"python -m pip install -U matplotlib\" may also install matplotlib, but it may result in \"PermissionError...python3.6\" eventually")
-  exit(1)
-  
-import numpy as np
 
 def xdsconv(args_dict):
   

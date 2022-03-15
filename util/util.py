@@ -3,23 +3,6 @@ from math import isclose
 import argparse, codecs, glob, os, platform, random, shutil, signal, subprocess, sys, time
 import mrc2smv, protein, shelx, xds, xdsconv, xscale
 import mrcfile
-
-try:
-  from envbash import load_envbash
-except:
-  print ("envbash not found, install it by typing")
-  print ("\tpip install envbash")
-  print ("\tReference: https://pypi.org/project/envbash/")
-  exit(1)
-
-try:
-  import matplotlib.image as mpimg
-except:
-  print ("matplotlib not found, install it.")
-  print ("\tconda install matplotlib")
-  print ("\t\"python -m pip install -U matplotlib\" may also install matplotlib, but it may result in \"PermissionError...python3.6\" eventually")
-  exit(1)
-  
 import numpy as np
 
 home_dir_path = os.path.expanduser("~")
@@ -613,51 +596,6 @@ def load_density_file(fname):
     #print(f"mrc.is_volume():{mrc.is_volume()}")  # check if mrc is a volume
     return mrc
 ##### end of def load_density_file(fname):
-
-
-def mrc2png(args_dict, ORGX_ORGY, mrc_w_path):
-  mrc_wo_path = os.path.basename(mrc_w_path)
-  mrc_wo_path_wo_ext = os.path.splitext(mrc_wo_path)[0]
-  
-  cwd = os.getcwd()
-  target_folder = os.path.join(cwd[:(len(cwd)-3)], "img")
-  output_file_name = os.path.join(target_folder, mrc_wo_path_wo_ext)
-  
-  if (mrc_w_path[len(mrc_w_path)-5:len(mrc_w_path)] == ".mrcs"):
-    mrcs = True
-  else:
-    mrcs = False
-  
-  if (mrcs == True):
-    output_file_name = output_file_name + "_mrcs.png"
-  else:
-    output_file_name = output_file_name + "_mrc.png"
-  
-  if (ORGX_ORGY == "ORGX"):
-    print_this = "\tAutoMicroED will transform " + str(mrc_w_path) + " to png file(s)."
-    flog(print_this, args_dict['logfile_name_w_abs_path'])
-
-    command = "e2proc2d.py " + str(mrc_w_path) + " " + str(output_file_name) \
-    + " --outmode uint8 --unstacking\n"
-    flog(command, args_dict['logfile_name_w_abs_path'])
-    os.system(command)
-  
-  search_this = os.path.join(target_folder, "*.png")
-  
-  for png_name in glob.glob(search_this): # this glob pick file randomly
-    base_png_name = os.path.basename(png_name)
-    splited_base_png_name = base_png_name.split(".png")
-    splited_base_png_name2 = splited_base_png_name[0].split("-")
-    image_num = int(splited_base_png_name2[len(splited_base_png_name2)-1])
-    
-    if (int(args_dict['sections'])) > 1:
-      if (image_num <= args_dict['min_DATA_RANGE']) or (image_num >= args_dict['max_DATA_RANGE']):
-        continue
-  
-    print_this = "png file that is ultimately used for estimate_ORGX_ORGY_by_AutoMicroED:" + str(png_name)
-    flog(print_this, args_dict['logfile_name_w_abs_path'])
-    return png_name
-############ end of def mrc2png(ORGX_ORGY, mrc_w_path, logfile_name_w_abs_path):
 
 
 def nonBlockingRawInput(python_version, prompt='', timeout=1): # timeout should be integer, not float
