@@ -4,13 +4,6 @@ import mrcfile
 import numpy as np
 import util
 
-try:
-  import matplotlib.image as mpimg
-except:
-  print ("matplotlib not found, install it.")
-  print ("\tconda install matplotlib")
-  print ("\t\"python -m pip install -U matplotlib\" may also install matplotlib, but it may result in \"PermissionError...python3.6\" eventually")
-  exit(1)
 
 home_dir_path = os.path.expanduser("~")
 
@@ -82,69 +75,6 @@ def add_DELPHI_10(logfile_name_w_abs_path):
   
   shutil.move("XDS_w_DELPHI_10.INP", "XDS.INP")
 ############# end of def add_DELPHI_10()
-
-
-def estimate_ORGX_ORGY_by_AutoMicroED(args_dict, ORGX_ORGY, mrc_w_path):
-  if (args_dict['input_list_has_mrc'] == True):
-    print_this = "\tA mrc file that will be used to estimate ORGX_ORGY_by_AutoMicroED:" + str(mrc_w_path)
-    util.flog(print_this, args_dict['logfile_name_w_abs_path'])
-
-    use_this_image_file_for_ORGX_ORGY_estimation = util.mrc2png(args_dict, ORGX_ORGY, mrc_w_path)
-                             # matplotlib can't deal tif, can deal png though
-    if ((use_this_image_file_for_ORGX_ORGY_estimation == False) or (use_this_image_file_for_ORGX_ORGY_estimation == None)):
-      return False
-  else:
-    
-    file_list = []
-    for (dirpath, dirnames, filenames) in os.walk(mrc_w_path):
-      file_list.extend(filenames)
-    use_this_image_file_for_ORGX_ORGY_estimation = random.choice(file_list)
-
-    
-  ORGX_ORGY = estimate_ORGX_ORGY_by_AutoMicroED_now_by_avg(args_dict, ORGX_ORGY, use_this_image_file_for_ORGX_ORGY_estimation)
-  return ORGX_ORGY
-############ end of def estimate_ORGX_ORGY_by_AutoMicroED(ORGX_ORGY, mrc_w_path, logfile_name_w_abs_path):
-
-
-def estimate_ORGX_ORGY_by_AutoMicroED_now_by_avg(args_dict, ORGX_ORGY, image_file_name):
-  half = int(args_dict['NX'])/2
-  
-  lower_limit = half*0.925
-  upper_limit = half*1.075
-  
-  img = mpimg.imread(image_file_name)
-  all_pixels = []
-  for x in range(len(img)):
-    if (x < lower_limit) or (x > upper_limit):
-      continue
-    for y in range(len(img[0])):
-      if (y < lower_limit) or (y > upper_limit):
-        continue
-      pixel = img[x][y]
-      all_pixels.append(pixel)
-  avg = np.mean(all_pixels)
-  
-  x_for_above_avg_pixel_array = []
-  y_for_above_avg_pixel_array = []
-  for x in range(len(img)):
-    if (x < lower_limit) or (x > upper_limit):
-      continue
-    for y in range(len(img[0])):
-      if (y < lower_limit) or (y > upper_limit):
-        continue
-      pixel = img[x][y]
-      if (pixel > avg):
-        x_for_above_avg_pixel_array.append(x)
-        y_for_above_avg_pixel_array.append(y)
-  
-  if (ORGX_ORGY == "ORGX"):
-    ORGX= int(np.mean(x_for_above_avg_pixel_array))
-    return ORGX
-  else:
-    ORGY= int(np.mean(y_for_above_avg_pixel_array))
-    return ORGY
-######## end of def estimate_ORGX_ORGY_by_AutoMicroED_now_by_avg(image_file_name):
-
 
 
 def estimate_ORGX_ORGY_with_mrc_lib(args_dict, ORGX_ORGY, mrc_w_path):
