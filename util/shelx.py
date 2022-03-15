@@ -170,7 +170,8 @@ def shelx(args_dict, output_file_name_from_xdsconv):
         util.flog("Please install PHENIX (https://www.phenix-online.org/download/) and add folder that has phenix.python to $PATH", args_dict['logfile_name_w_abs_path'])
         util.flog("\tFor example, the folder that has phenix.python could be /Users/kimd999/bin/phenix-1.18.2-3874/build/bin", args_dict['logfile_name_w_abs_path'])
       
-        print_this = "\nPress enter if a user wants to use website to retrieve LATT and SYMM instead.\n"
+        print_this = "\nUser needs to use https://cci.lbl.gov/cctbx/shelx.html to retrieve LATT and SYMM instead.\n"
+        print_this = print_this + "\nPress enter key now.\n"
         if ("kimd999" in home_dir_path):
           nonBlockingRawInput(print_this)
         else:
@@ -194,7 +195,8 @@ def shelx(args_dict, output_file_name_from_xdsconv):
         util.flog("\nFor example, the folder that has phenix.python could be /Users/kimd999/bin/phenix-1.18.2-3874/build/bin", \
              args_dict['logfile_name_w_abs_path'])
     
-        print_this = "\nPress enter if a user wants to use website to retrieve LATT and SYMM instead.\n"
+        print_this = "\nUser needs to use https://cci.lbl.gov/cctbx/shelx.html to retrieve LATT and SYMM instead.\n"
+        print_this = print_this + "\nPress enter key now.\n"
         
         '''
         if ("kimd999" in home_dir_path):

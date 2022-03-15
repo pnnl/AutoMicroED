@@ -1,27 +1,6 @@
-from datetime import datetime as dt
-from math import isclose
 import argparse, codecs, glob, os, platform, random, shutil, signal, subprocess, sys, time
 import protein, xds, xscale
 import util
-
-try:
-  from envbash import load_envbash
-except:
-  print ("envbash not found, install it by typing")
-  print ("\tpip install envbash")
-  print ("\tReference: https://pypi.org/project/envbash/")
-  exit(1)
-
-try:
-  import matplotlib.image as mpimg
-except:
-  print ("matplotlib not found, install it.")
-  print ("\tconda install matplotlib")
-  print ("\t\"python -m pip install -U matplotlib\" may also install matplotlib, but it may result in \"PermissionError...python3.6\" eventually")
-  exit(1)
-  
-import numpy as np
-
 
 def enter_SYMM_automatically(f_out):
   f_in  = codecs.open("LATT_SYMM.txt", 'r')
@@ -63,6 +42,19 @@ def enter_SYMM_from_website(home_dir_path, f_out):
     write_this = "SYMM " + str(SYMM) + "\n"
     f_out.write(write_this)
 ########## end of def enter_SYMM_from_website()
+
+
+def receive_from_user(parameter):
+  print_this = "\nEnter " + str(parameter) + ":"  
+  
+  parameter_from_user = input(print_this)
+  
+  if (parameter == "outdir"):
+    parameter_from_user = parameter_from_user.replace(" ", "_")
+
+  print ("\n" + str(parameter) + ": " + str(parameter_from_user))
+  return parameter_from_user
+########## end of def receive_from_user(parameter)
 
 
 def retrieve_LATT_SYMM_by_website(SPACE_GROUP_NUMBER):

@@ -1,9 +1,4 @@
 
-######## <begin> Assign a pathway of IMOD binaries (executables)
-IMOD_folder /home/scicons/cascade/apps/imod/4.10.16/IMOD/bin/
-######## <end> Assign a pathway of IMOD binaries (executables)
-
-
 ######## <begin> mrc2smv
 mrc2smv_folder /opt/apps/tvips-tools-jiffies-20190827-linux64
 

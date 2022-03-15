@@ -12,9 +12,6 @@
   - Fiji
      - Download from https://imagej.net/Fiji/Downloads
      - Works in WindowsOS, macOS and linux
-  - IMOD
-     - Download from https://bio3d.colorado.edu/imod/
-     - (For PNNL_krios_gpu user, it is already installed in /home/scicons/cascade/apps/imod/4.10.16/IMOD/bin)
   - matplotlib
      - AutoMicroED shows message how to install matplotlib if there is none.
   - phaser

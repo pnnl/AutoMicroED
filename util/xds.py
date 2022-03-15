@@ -1,5 +1,6 @@
 from datetime import datetime as dt
 import codecs, os, shutil, subprocess, sys, time
+import mrcfile
 import numpy as np
 import util
 
@@ -12,6 +13,26 @@ except:
   exit(1)
 
 home_dir_path = os.path.expanduser("~")
+
+## <begin> writing print_this_for_ORGXY
+print_this = "\n\t(note) A user may locate ORGX and ORGY by opening *.img or *.mrc files by Adxv."
+print_this = print_this + "\n\t(macOS) Adxv can be installed in /Applications"
+
+print_this = print_this + "\n\t(after ssh at linux machine) cd /opt/apps/bin (and) ./adxv.x86_64CentOS7 (enter to launch adxv)"
+print_this = print_this + "\n\t\t(when ssh to linux machine by iterm2) In order to open Adxv in user's computer rather than krios GPU machine itself, a user needs to ssh with either -X or -Y. ssh with -XC doesn't work"
+print_this = print_this + "\n\t\t(when ssh to linux machine by iterm2) For example, ssh -X kimd999@kriosgpu.emsl.pnl.gov works. However, ssh -XC kimd999@kriosgpu.emsl.pnl.gov doesn't work"
+print_this = print_this + "\n\t\t(when ssh to linux machine by x11-x-term) In order to open Adxv in user's computer rather than krios GPU machine itself, a user needs to ssh with -Y only. ssh with -XC or -X don't work"
+print_this = print_this + "\n\t\t(when ssh to linux machine by x11-x-term) For example, ssh -Y kimd999@kriosgpu.emsl.pnl.gov works."
+print_this = print_this + "\n\t These result image files (*.img) are in output/<date-time of this job>/<mrc file list prefix>/img"
+print_this = print_this + "\n\t (note) Example cross is in empiar-10293_adxv.png in reference folder."
+print_this = print_this + "\n\t\t(reference) https://strucbio.biologie.uni-konstanz.de/xdswiki/index.php/Finding_out_ORGX_ORGY)"
+print_this = print_this + "\n\t\t The error you make in the determination of ORGX ORGY should in principle be less than half of the distance between two spots."
+print_this = print_this + "\n\t\t If you have a reasonable estimate (from one of the methods above), but the error is bigger than that, you can still find out the true ORGX ORGY by inspecting IDXREF.LP."
+print_this = print_this + "\n\t\t This works best if COLSPOT has seen a significant fraction of all frames. This procedure is documented."
+print_this_for_ORGXY = print_this + "\n\t\t (note) At least with Doo Nam's experience, finding true ORGX ORGY by inspecting IDXREF.LP was not feasible."
+## <end> writing print_this_for_ORGXY
+
+
 
 def add_BEAM_DIVERGENCE_REFLECTING_RANGE(args_dict):
   BEAM_DIVERGENCE, REFLECTING_RANGE = get_BEAM_DIVERGENCE_REFLECTING_RANGE(args_dict)
@@ -125,6 +146,73 @@ def estimate_ORGX_ORGY_by_AutoMicroED_now_by_avg(args_dict, ORGX_ORGY, image_fil
 ######## end of def estimate_ORGX_ORGY_by_AutoMicroED_now_by_avg(image_file_name):
 
 
+
+def estimate_ORGX_ORGY_with_mrc_lib(args_dict, ORGX_ORGY, mrc_w_path):
+  #mrc_w_path -> /gpustorage/MicroEDProc/SMP/combogrid_061521/2021-06-15-165749/165749merged.mrcs
+
+  print_this = "\tA mrc file that will be used to estimate ORGX_ORGY_by_AutoMicroED:" + str(mrc_w_path)
+  
+
+  util.flog(print_this, args_dict['logfile_name_w_abs_path'])
+
+  mrc = load_density_file(mrc_w_path)
+
+  print (f"mrc:{mrc}")
+  #MrcMemmap('/gpustorage/MicroEDProc/SMP/combogrid_061521/2021-06-15-165749/165749merged.mrcs', mode='r')
+
+  #print (f"mrc.data:{mrc.data}")
+  '''[[[-36. -36. -36. ... -39.   7. -19.]
+  [  4.   4.   4. ... -11.  -4. -15.]
+  [ 43.  43.  43. ... -54. -31. -37.]...'''
+  
+  print (f"mrc.data.shape:{mrc.data.shape}")
+  #(120, 2048, 2048)
+
+  use_this_mrc = int(mrc.data.shape[0]/2)
+  
+  print (f"mrc.data[use_this_mrc]:{mrc.data[use_this_mrc]}")
+  print (f"type(mrc.data[use_this_mrc]):{type(mrc.data[use_this_mrc])}")
+
+  #print (f"np.mean(mrc.data[use_this_mrc]):{np.mean(mrc.data[use_this_mrc])}")
+  #22.31913948059082
+
+  half = int(args_dict['NX'])/2
+  
+  lower_limit = half*0.925
+  upper_limit = half*1.075
+  
+  
+  avg = np.mean(mrc.data[use_this_mrc])
+  
+  img = mrc.data[use_this_mrc]
+
+  x_for_above_avg_pixel_array = []
+  y_for_above_avg_pixel_array = []
+  for x in range(len(img)):
+    if (x < lower_limit) or (x > upper_limit):
+      continue
+    for y in range(len(img[0])):
+      if (y < lower_limit) or (y > upper_limit):
+        continue
+      pixel = img[x][y]
+      if (pixel > avg):
+        x_for_above_avg_pixel_array.append(x)
+        y_for_above_avg_pixel_array.append(y)
+   
+  if (ORGX_ORGY == "ORGX"):
+    ORGX= int(np.mean(x_for_above_avg_pixel_array))
+    print (f"ORGX:{ORGX}")
+    return ORGX
+  else:
+    ORGY= int(np.mean(y_for_above_avg_pixel_array))
+    print (f"ORGY:{ORGY}")
+    return ORGY
+
+############ end of def estimate_ORGX_ORGY_with_mrc_lib(ORGX_ORGY, mrc_w_path, logfile_name_w_abs_path):
+
+
+
+
 def get_BEAM_DIVERGENCE_REFLECTING_RANGE(args_dict):
   write_this = "\ncurrent working directory: " + str(os.getcwd()) + "\n"
   util.flog(write_this, args_dict['logfile_name_w_abs_path'])
@@ -185,6 +273,24 @@ def get_ISa(args_dict, use_this_file_get_ISa):
   ISa = splited_extracted[2]
   return ISa
 ########## end of def get_ISa():
+
+
+def load_density_file(fname):
+    """load a .mrc file using the mrcfile package
+
+    Args:
+        fname ([str]): filename / filepath
+
+    Returns:
+        [mrcfile object]: MRC data 
+    """ 
+    # load .mrc tomogram file as a MRC object which has header and data properties. 
+    # see: https://mrcfile.readthedocs.io/en/latest/usage_guide.html 
+    mrc = mrcfile.mmap(fname, mode=u'r')  # memory mapped mode for large files
+    #print(f"mrc.is_image_stack():{mrc.is_image_stack()}")  # check if mrc is an image stack 
+    #print(f"mrc.is_volume():{mrc.is_volume()}")  # check if mrc is a volume
+    return mrc
+##### end of def load_density_file(fname):
 
 
 def loop_BEAM_DIVERGENCE_REFLECTING_RANGE(args_dict, xds_log_filename_wo_ext, xds_kind, \
@@ -354,43 +460,23 @@ def run_xds(args_dict, mrc_w_path, output_folder_name):
 
       if (combi not in args_dict):
         print_this = "(note)  AutoMicroED doesn't see " + str(ORGXY) + " in a user-provided args_file."
-        print_this = print_this + "\n\t\t\t\tTherefore, it will locate " + str(ORGXY) + " automatically with help from eman2."
+        print_this = print_this + "\n\t\t\t\tTherefore, it will locate " + str(ORGXY) + " automatically with help from mrclibrary."
         util.flog(print_this, args_dict['logfile_name_w_abs_path'])
         
-        try:
-          path = subprocess.check_output(["which", "e2proc2d.py"]).decode('UTF-8')
-          print_this = "\tPath of e2proc2d.py:" + str(path)
-          util.flog(print_this, args_dict['logfile_name_w_abs_path'])
-          e2proc2d_is_located = True
-        except:
-          print_this = "\ne2proc2d.py is not located."
-          print_this = print_this + "\n\tAdd eman2 to $PATH in ~/.bashrc and run AutoMicroED again if a user wants to estimate ORGX/ORGY by AutoMicroED."
-          print_this = print_this + "\n\t\tFor example, for bash in Linux,     \n\t\texport PATH=\"/home/kimd999/bin/eman2_91/bin\":$PATH"
-          print_this = print_this + "\n\t\tFor example, for bash in macOS,     \n\t\texport PATH=\"/Users/kimd999/bin/EMAN2/bin\":$PATH"
-          print_this = print_this + "\n\tFor now, AutoMicroED will receive ORGX/ORGY from user directly."
-          util.flog(print_this, args_dict['logfile_name_w_abs_path'])
-          e2proc2d_is_located = False
+
+        ####new using mrc lib
+        ORGXY_start_time = time.time()
           
-          
-        if (e2proc2d_is_located == True):
-          ORGXY_start_time = time.time()
-          
-          args_dict[combi] = estimate_ORGX_ORGY_by_AutoMicroED(args_dict, str(ORGXY), mrc_w_path)
-          if (args_dict[combi] == False):
-            print_this = "estimated ORGXY is False, please email doonam.kim@pnnl.gov"
-            util.flog(print_this, args_dict['logfile_name_w_abs_path'])
-            time.sleep(10000)
-          ORGXY_end_time = time.time()
-    
-          write_this = util.show_time("estimate_ORGX_ORGY_by_AutoMicroED", ORGXY_start_time, ORGXY_end_time)
-          util.flog(write_this, args_dict['logfile_name_w_abs_path'])
-          
-          print_this = str(ORGXY) + " is automatically estimated by AutoMicroED (e.g. " + str(args_dict[combi]) + ")"
-          util.flog(print_this, args_dict['logfile_name_w_abs_path'])
-        else:
-          util.flog(print_this_for_ORGXY, args_dict['logfile_name_w_abs_path'])
-          args_dict[combi] = receive_from_user(str(ORGXY), output_folder_name)
-          
+        args_dict[combi] = estimate_ORGX_ORGY_with_mrc_lib(args_dict, str(ORGXY), mrc_w_path)
+        
+        ORGXY_end_time = time.time()
+  
+        write_this = util.show_time("estimate_ORGX_ORGY_by_AutoMicroED", ORGXY_start_time, ORGXY_end_time)
+        util.flog(write_this, args_dict['logfile_name_w_abs_path'])
+        
+        print_this = str(ORGXY) + " is automatically estimated by AutoMicroED (e.g. " + str(args_dict[combi]) + ")"
+        util.flog(print_this, args_dict['logfile_name_w_abs_path'])
+
          
         print_this = "\t\t(tip) Enter \"bypass\" and hit enter key if a user wants to add current " + str(ORGXY) \
                    + " in an argument file (so that this automatic estimation of " + str(ORGXY) + " can be bypassed next time when user runs AutoMicroED again).\n"

@@ -4,11 +4,6 @@ sections 120
 ########## <end> Basic information of input mrc
 
 
-######## <begin> Assign a pathway of IMOD binaries (executables)
-IMOD_folder /home/scicons/cascade/apps/imod/4.10.16/IMOD/bin/
-######## <end> Assign a pathway of IMOD binaries (executables)
-
-
 ######## <begin> mrc2smv
 
 d_not_calibrated 165749merged 430

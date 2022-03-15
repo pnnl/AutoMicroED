@@ -38,12 +38,6 @@ outdir <A user may update this>
 
 
 
-######## <begin> Assign a pathway of IMOD binaries (executables)
-IMOD_folder <A user needs to update this path>
-# For example, /home/scicons/cascade/apps/imod/4.10.16/IMOD/bin
-######## <end> Assign a pathway of IMOD binaries (executables)
-
-
 
 ######## <begin> mrc2smv
 # Please refer (AutoMicroED git repo)/templates/explanation_of_list_files.txt for detail.

@@ -10,9 +10,8 @@
       - Input: *.img, *.mrc, *.mrcs file
       - Output example
          - <img src="images/mrcs_by_adxv.png" width="200" height="200">
-   - Function 2: locate ORGX and ORGY manually (however, AutoMicroED will estimate ORGX and ORGY automatically if user specified an argument for this function and eman2 is installed)
-      - Input: AutoMicroED prepares by eman2
-      - Output example
+   - Function 2: locate ORGX and ORGY manually (however, AutoMicroED will estimate ORGX and ORGY automatically if user specified an argument for this function)
+      - Example
          - <img src="images/empiar-10293_adxv_0.5_0.5.png" width="180" height="180">
 ## xds
    - Function
