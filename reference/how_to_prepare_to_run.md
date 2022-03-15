@@ -20,11 +20,11 @@
            - /home/KL/single_frames/merge_2/crystal_6/2021-03-30-142654/2021-03-30-142654_0200.mrc
         - in mrc_list.txt, then AutoMicroED uses all 2021-03-03-133857_????.mrc and 2021-03-30-142654_????.mrc files
      - If a user prefers, stack mrc files can be entered to AutoMicroED instead.
-        - Stack can be made by 'e2proc2d.py (file names of each mrc) (file name of merged mrcs)'
+        - Stack can be made by eman2 (which should be installed aside from this AutoMicroED)
+           - 'e2proc2d.py (file names of each mrc) (file name of merged mrcs)'
            - (For example,) 'e2proc2d.py *_each.mrc merged.mrcs'
               - (File name of merged mrcs) should have .mrcs extension for proper eman2 handling
-           - This eman2 operation needs proper eman2 environement setting.
-              - (For example, in PNNL_Krios_GPU server) source /home/kimd999/.bashrc_eman2
+           - This eman2 operation needs proper eman2 environement setting (e.g. ~/.bashrc which is updated by eman2 installation)
         - Then, let mrc_list.txt contains merged mrcs files.
            - (For example mrc_list.txt has)
               - /home/KL/single_frames/merge_2/crystal_6/2021-03-03-133857/2021-03-03-133857.mrcs
