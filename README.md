@@ -30,6 +30,4 @@
 ## Overview of AutoMicroED
    - [link](./reference/protocol.md)
 
-Authors: James Evans, Irina Novikova, Doo Nam Kim, Samantha Powell
-
-Please email doonam.kim@pnnl.gov or James.Evans@pnnl.gov for inquiries/suggestions.
+Post inquiries/suggestions into https://github.com/pnnl/AutoMicroED/issues
