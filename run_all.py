@@ -74,9 +74,14 @@ if (__name__ == "__main__") :
 
   working_folder = today.strftime('%Y%m%d') + "_" + str(today.hour) + "_" + str(today.minute) + "_" + str(today.second)
   
-  if ('outdir' in args_dict.keys()):
-    working_folder = args_dict['outdir'] + "_" + working_folder
+  #print (f"args_dict:{args_dict}")
 
+  #print ('outdir' in args_dict.keys())
+  #-> False since args_dict is not populated by user's args_file yet
+  #if ('outdir' in args_dict.keys()):
+  #  working_folder = args_dict['outdir'] + "_" + working_folder
+
+  #a=b
   working_folder_abs_path = os.path.abspath(working_folder)
   
   os.mkdir(working_folder_abs_path)
@@ -278,8 +283,13 @@ if (__name__ == "__main__") :
        ):
       check_movie_quality()
 
-    ############### <begin> args_dict['sections']) != 1
-    if (int(args_dict['sections']) != 1):
+    #print (f"int(args_dict['sections']):{int(args_dict['sections'])}")
+    # aceta_singlemrc_list.txt -> 1
+
+    #tutorial /gpustorage/MicroEDProc/SMP/combogrid_061521/2021-06-15-165749/165749merged.mrcs -> 120 (= imod's sections)
+    
+    ############### <begin> args_dict['sections']) > 1
+    if (int(args_dict['sections']) > 1):
       # path_before_opening_list_of_mrc_file_or_smv_folder = os.getcwd()
       # #print (fpath_before_opening_list_of_mrc_file_or_smv_folder:\
       #         {path_before_opening_list_of_mrc_file_or_smv_folder}")
@@ -289,7 +299,7 @@ if (__name__ == "__main__") :
       for mrc_file in mrc_file_list_opened:
         mrc_w_path = mrc_file.rstrip()
         write_this = "mrc_file:" + str(mrc_file)
-        flog(write_this, args_dict['logfile_name_w_abs_path'])
+        flog_wo_print(write_this, args_dict['logfile_name_w_abs_path'])
         
         if (mrc_file == "\n") or (mrc_file == ""):
           continue
@@ -315,7 +325,6 @@ if (__name__ == "__main__") :
             os.mkdir("img")
             os.chdir("img")
       
-
             more_crystal_needed = per_each_mrc_file_both_single_and_multiple_sections(args_dict, 
                                                                       mrc_w_path, 
                                                                       intermediate_output_folder_name)
@@ -331,7 +340,7 @@ if (__name__ == "__main__") :
               flog(write_this, args_dict['logfile_name_w_abs_path'])
               
               if (more_crystal_needed == True):
-                write_this = "AutoMicroED will feed more mrc/mrcs file (if any)."
+                write_this = "AutoMicroED will feed more mrcs file (if any)."
                 flog(write_this, args_dict['logfile_name_w_abs_path'])
             
             flog(str(os.getcwd()), args_dict['logfile_name_w_abs_path'])
@@ -437,7 +446,7 @@ if (__name__ == "__main__") :
         print_this = "xds needs to be re-ran with other approach/data. Please analyze xds.log files."
         print (print_this)
         exit(1)
-    ############### <end> args_dict['sections']) != 1
+    ############### <end> args_dict['sections']) > 1
 
 
     ############### <begin> single frame mrc
@@ -502,7 +511,7 @@ if (__name__ == "__main__") :
           os.chdir("img")
           
           
-          print_this = "mrc file that is used for per_each_mrc_file_both_single_and_multiple_sections:" + str(mrc_w_path)
+          print_this = "(single column) mrc file that is used for per_each_mrc_file_both_single_and_multiple_sections:" + str(mrc_w_path)
           flog(print_this, args_dict['logfile_name_w_abs_path'])
             
           more_crystal_needed = per_each_mrc_file_both_single_and_multiple_sections(args_dict, 
@@ -519,7 +528,7 @@ if (__name__ == "__main__") :
             flog(write_this, args_dict['logfile_name_w_abs_path'])
             
             if (more_crystal_needed == True):
-              write_this = "AutoMicroED will feed more mrc/mrcs file (if any)."
+              write_this = "AutoMicroED will feed more individual mrc (column=1) file (if there are any)."
               flog(write_this, args_dict['logfile_name_w_abs_path'])
 
           if (more_crystal_needed == -999):
@@ -536,6 +545,7 @@ if (__name__ == "__main__") :
         flog(write_this, args_dict['logfile_name_w_abs_path'])
         exit(1)
    
+      args_dict['more_crystal_needed'] = more_crystal_needed
       if (more_crystal_needed != "no CORRECT.LP found"):
         write_this = "more_crystal_needed after looping through list_of_mrc_file_or_smv_folder: " + str(more_crystal_needed)
         flog(write_this, args_dict['logfile_name_w_abs_path'])
@@ -547,85 +557,7 @@ if (__name__ == "__main__") :
     
 
   else: # input_list_has_mrc == False (such as smv and img file)
-  # Sam believes that smv file and img file are identical
 
-    '''
-    if (int(args_dict['sections']) == 1):
-      print_this = "section=1 (e.g. input is not stack) when 'smv folders are provided by user' is not supported by AutoMicroED yet (it can be developed if there's a demand)."
-      flog(print_this, args_dict['logfile_name_w_abs_path'])
-      flog_wo_print(print_this, args_dict['summary_logfile_name_w_abs_path'])
-      exit(1)
-    else: #int(args_dict['sections']) != 1)
-      smv_folder_opened = codecs.open(list_of_mrc_file_or_smv_folder_w_abs_path, 'r')
-
-      for each_smv_folder in smv_folder_opened:
-        each_smv_folder = each_smv_folder.rstrip()
-        write_this = "each_smv_folder:" + str(each_smv_folder)
-        flog(write_this, args_dict['logfile_name_w_abs_path'])
-        
-        if (each_smv_folder == "\n") or (each_smv_folder == ""):
-          continue
-
-        #print (feach_smv_folder:{each_smv_folder}")
-        intermediate_output_folder_name = each_smv_folder.split('/')[-2]
-        #print (fintermediate_output_folder_name:{intermediate_output_folder_name}")
-        # smv only -> 165749merged
-        
-        os.mkdir(intermediate_output_folder_name)
-        os.chdir(intermediate_output_folder_name)
-        
-        os.mkdir("xds")
-        os.mkdir("img")
-        os.chdir("img")
-
-        command = "cp " + str(each_smv_folder).rstrip() + "/*.img ."
-        print(command)
-        os.system(command)
-
-        more_crystal_needed = per_each_mrc_file_both_single_and_multiple_sections(args_dict, 
-                                                                  mrc_w_path, 
-                                                                  intermediate_output_folder_name)
-
-        if (more_crystal_needed == "failed"):
-          exit(1)
-        elif (more_crystal_needed == "CORRECT.LP not found"):
-          write_this = "[xds] CORRECT.LP not found even after many troubleshootings."
-          flog(write_this, args_dict['logfile_name_w_abs_path'])
-          flog_wo_print(write_this, args_dict['summary_logfile_name_w_abs_path'])
-        else:
-          write_this = "more_crystal_needed: " + str(more_crystal_needed)
-          flog(write_this, args_dict['logfile_name_w_abs_path'])
-          
-          if (more_crystal_needed == True):
-            write_this = "AutoMicroED will feed more mrc/mrcs file (if any)."
-            flog(write_this, args_dict['logfile_name_w_abs_path'])
-        
-        #flog(str(os.getcwd()), args_dict['logfile_name_w_abs_path'])
-        # tutorial ->/gpustorage/DN/microED/small/acet/protein_False/tutorial/output/20210920_12_32_1/165749merged/xds
-
-        ##print (fpath_before_opening_list_of_mrc_file_or_smv_folder:{path_before_opening_list_of_mrc_file_or_smv_folder}")
-        # tutorial ->/gpustorage/DN/microED/small/acet/protein_False/tutorial/output/20210920_12_32_1
-
-        os.chdir(path_before_opening_list_of_mrc_file_or_smv_folder)
-        
-        #flog(str(os.getcwd()), args_dict['logfile_name_w_abs_path'])
-        # tutorial ->/gpustorage/DN/microED/small/acet/protein_False/tutorial/output/20210920_12_32_1
-
-        if (more_crystal_needed == False):
-          break
-
-      smv_folder_opened.close()
-      #### end of for each_smv_folder in smv_folder_opened:
-
-      if (more_crystal_needed != "no CORRECT.LP found"):
-        write_this = "bool(more_crystal_needed) after looping through list_of_mrc_file_or_smv_folder: " + str(more_crystal_needed)
-        args_dict['more_crystal_needed'] = more_crystal_needed
-        flog(write_this, args_dict['logfile_name_w_abs_path'])
-      else:
-        print_this = "xds needs to be re-ran with other approach/data."
-        print (print_this)
-        exit(1)
-        '''
     smv_folder_opened = codecs.open(list_of_mrc_file_or_smv_folder_w_abs_path, 'r')
 
     for each_smv_folder in smv_folder_opened:
@@ -682,7 +614,7 @@ if (__name__ == "__main__") :
         flog(write_this, args_dict['logfile_name_w_abs_path'])
         
         if (more_crystal_needed == True):
-          write_this = "AutoMicroED will feed more mrc/mrcs file (if any)."
+          write_this = "AutoMicroED will feed more smv/img file (if there are any)."
           flog(write_this, args_dict['logfile_name_w_abs_path'])
       
       #flog(str(os.getcwd()), args_dict['logfile_name_w_abs_path'])
@@ -720,6 +652,12 @@ if (__name__ == "__main__") :
   # (after per_each_mrc_file_both_single_and_multiple_sections)
 
   #print (os.getcwd()) # /gpustorage/DN/microED/acet/protein_False/output/20210726_18_50_22
+  print (f"args_dict:{args_dict}")
+  '''args_dict:{'starting_dir': '/gpustorage/DN/microED/small/acet_fastest_and_unit_tests/fix_dis_each_mrc', 'repo_location': '/gpustorage/automation/MicroED/Scripts/AutoMicroED', 'args_file_w_abs_path': '/gpustorage/DN/microED/small/acet_fastest_and_unit_tests/fix_dis_each_mrc/aceta_singlearg_DN.txt', 'logfile_name_w_abs_path': '/gpustorage/DN/microED/small/acet_fastest_and_unit_tests/fix_dis_each_mrc/output/20220325_10_15_2/full.log', 'summary_logfile_name_w_abs_path': '/gpustorage/DN/microED/small/acet_fastest_and_unit_tests/fix_dis_each_mrc/output/20220325_10_15_2/summary.log', 'outdir': 'specified_more_crystal_needed_to_args', 'mrc2smv_folder': '/opt/apps/tvips-tools-jiffies-20190827-linux64', 'Bypass_movie_inspection': 'True', ('d_not_calibrated', '2021-06-15-165749_????'): '430', ('d_not_calibrated', '2021-06-15-170629_????'): '430', 'd_calibration_1st_coef': '1.8', 'd_calibration_2nd_coef': '-14.53', 'B': '2', 'r': '0.6', 'voltage_of_the_microscope': '300', 'E': '1', 'P': '0.028', 'Bypass_image_inspection': 'True', 'least_completeness_overall': '95', 'ROTATION_AXIS': '-1 0 0 ', 'SPACE_GROUP_NUMBER': '0', ('STARTING_ANGLE', '2021-06-15-165749_????'): '-65', ('STARTING_ANGLE', '2021-06-15-170629_????'): '-65', 'TEST_RESOLUTION_RANGE_max': '4', 'TEST_RESOLUTION_RANGE_min': '0.5', 'generate_adx_folder': '/opt/apps/AutoMicroED/', 'Bypass_generate_adx_inspection': 'True', 'ccp4_folder': '/opt/apps/ccp4-7.1/bin', 'protein': 'FALSE', 'SFAC': 'C H N O ', 'UNIT': '8 9 1 2 ', 'Generate_LATT_SYMM_from_website': 'False', 'spot2pdb_folder': '/opt/apps/AutoMicroED/', 'spot2pdb_RESOLUTION_RANGE_min': '0.5', 'spot2pdb_RESOLUTION_RANGE_max': '4', 'input_list_has_mrc': True, 'columns': 2048, 'NX': 2048, 'NY': 2048, 'sections': 1, ('d_calibrated', '2021-06-15-165749_????'): 759.47, 'min_DATA_RANGE': 3, 'max_DATA_RANGE': 173, 'INCLUDE_RESOLUTION_RANGE': '99 0.0', ('ORGX', '2021-06-15-165749_????'): 1030, ('ORGY', '2021-06-15-165749_????'): 1030, 'TRUSTED_REGION_min': '0.0', 'TRUSTED_REGION_max': '1.4142', 'extra_xds_option': '', 'user_named_img_file_wo_output_folder_name': False, ('d_calibrated', '2021-06-15-170629_????'): 759.47, ('ORGX', '2021-06-15-170629_????'): 1032, ('ORGY', '2021-06-15-170629_????'): 1032, 'more_crystal_needed': True}'''
+
+  print (f"args_dict['more_crystal_needed']:{args_dict['more_crystal_needed']}")
+
+  #a=b
   returned_from_generate_each_SPACE_GROUP_folder = generate_each_SPACE_GROUP_folder(args_dict)
   if (returned_from_generate_each_SPACE_GROUP_folder == False):
     end_time = time.time()
@@ -833,8 +771,12 @@ if (__name__ == "__main__") :
       args_dict['outdir'] = answer
       working_folder = args_dict['outdir'] + "_" + working_folder
 
-    os.chdir("..")
-    new_working_folder_abs_path = os.path.abspath(working_folder)
+  else:
+    working_folder = args_dict['outdir'] + "_" + working_folder
 
-    command = "mv " + str(working_folder_abs_path) + " " + str(new_working_folder_abs_path)
-    os.system(command)
+  # common regardless whether user specified outdir or not
+  os.chdir("..")
+  new_working_folder_abs_path = os.path.abspath(working_folder)
+
+  command = "mv " + str(working_folder_abs_path) + " " + str(new_working_folder_abs_path)
+  os.system(command)
