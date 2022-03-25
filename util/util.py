@@ -401,9 +401,21 @@ def closing_remark(args_dict):
 
 def count_columns_sections_in_each_mrc_file_by_mrcfile(args_dict, mrc_w_path):
   mrc = load_density_file(mrc_w_path)
-  print (f"mrc.data.shape:{mrc.data.shape}") ##(120, 2048, 2048)
-  columns = mrc.data.shape[1]
-  sections = mrc.data.shape[0]
+  
+  #print (f"mrc.data.shape:{mrc.data.shape}") 
+  ## mrcs -> (120, 2048, 2048)
+  # each mrc -> (2048, 2048)
+
+  #print (f"len(mrc.data.shape):{len(mrc.data.shape)}") 
+  # each mrc -> 2
+
+
+  if len(mrc.data.shape) == 3:
+    columns = mrc.data.shape[1]
+    sections = mrc.data.shape[0]
+  else:
+    columns = mrc.data.shape[1]
+    sections = 1
   print ("columns: " + str(columns)) #2048
   print ("sections: " + str(sections)) # 120
   
@@ -511,6 +523,7 @@ def generate_each_similar_UNIT_CELL_folder(args_dict):
 
 
 def generate_each_SPACE_GROUP_folder(args_dict):
+  print ("generate_each_SPACE_GROUP_folder fn")
   starting_dir = os.getcwd()
   
   process = "generate each_SPACE_GROUP folder\n"
@@ -518,12 +531,21 @@ def generate_each_SPACE_GROUP_folder(args_dict):
   
   all_immediate_sub_dir = next(os.walk('.'))[1]
   
-  if args_dict['more_crystal_needed'] == True:
+  print (f"args_dict['more_crystal_needed']:{args_dict['more_crystal_needed']}")
+
+  #if args_dict['more_crystal_needed'] == True:
+  # 'more_crystal_needed' key error
+
+  if str(args_dict['more_crystal_needed']) == "True":
     if (len(all_immediate_sub_dir) < 2):
       flog("There is only 1 crystal.\nTherefore, there are no more crystals to merge.\nConsider to add more crystal information.", \
            args_dict['logfile_name_w_abs_path'])
       return False
+    else:
+      print_this = "More crystal deemed need for higher completeness. However, all available crystal information was used by AutoMicroED already. Number of all_immediate_sub_dir:" + str(len(all_immediate_sub_dir))
+      flog(print_this, args_dict['logfile_name_w_abs_path'])
     
+
   SPACE_GROUP_NUMBER_array = []
   combi_array = []
   for i in range(len(all_immediate_sub_dir)):
@@ -614,9 +636,15 @@ def per_each_mrc_file_both_single_and_multiple_sections (args_dict, mrc_w_path, 
   print (f"output_folder_name:{output_folder_name}")
   # tutorial -> 165749merged
   # smv only -> 165749merged
+  # each mrc -> 2021-06-15-165749
+
+
+  #print (args_dict['input_list_has_mrc'])
+  # each mrc -> True
+  
 
   if (args_dict['input_list_has_mrc'] == True):
-    write_this = "\nInput mrc to process: " + str(mrc_w_path)
+    write_this = "\nInput mrc to process: " + str(mrc_w_path) #/gpustorage/MicroEDProc/SMP/TutorialData/Acetaminophen/2021-06-15-165749/2021-06-15-165749_0004.mrc
     flog(write_this, args_dict['logfile_name_w_abs_path'])
     flog_wo_print(write_this, args_dict['summary_logfile_name_w_abs_path'])
 

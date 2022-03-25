@@ -14,6 +14,7 @@ command_for_number_of_active_jobs = "squeue | grep " + str(user_ID) + " | grep \
 
  
 def prepare_d_calibrated(args_dict, output_folder_name):  
+  print (f"prepare_d_calibrated fn")
 
   print (f"output_folder_name:{output_folder_name}")
   #165749merged
@@ -23,13 +24,6 @@ def prepare_d_calibrated(args_dict, output_folder_name):
   start_time = time.time()
   
   mrc_wo_path_wo_ext = output_folder_name
-  
-  #mrc_wo_path_wo_ext_w_4_questions_marks = mrc_wo_path_wo_ext[:-5] + "_????"
-  # this seems wrong
-  # because it will return 
-  # 165749merged
-  # to
-  # 165749m__????
 
   mrc_wo_path_wo_ext_w_4_questions_marks = mrc_wo_path_wo_ext + "_????"
 
@@ -45,7 +39,7 @@ def prepare_d_calibrated(args_dict, output_folder_name):
   if (args_dict['input_list_has_mrc'] == False):
     combi_d_calibrated = ('d_calibrated', str(mrc_wo_path_wo_ext))
   else:
-    if (int(args_dict['sections']) != 1):
+    if (int(args_dict['sections']) > 1):
       combi_d_calibrated = ('d_calibrated', str(mrc_wo_path_wo_ext))
     else:
       combi_d_calibrated = ('d_calibrated', str(mrc_wo_path_wo_ext_w_4_questions_marks))
@@ -64,7 +58,7 @@ def prepare_d_calibrated(args_dict, output_folder_name):
     '''
   
   if 'd_calibrated' not in args_dict:
-    if (int(args_dict['sections']) != 1):
+    if (int(args_dict['sections']) > 1):
       combi_d_not_calibrated = ('d_not_calibrated', str(mrc_wo_path_wo_ext))
     else:
       combi_d_not_calibrated = ('d_not_calibrated', str(mrc_wo_path_wo_ext_w_4_questions_marks))
@@ -146,18 +140,11 @@ def run_mrc2smv(args_dict, mrc_w_path, output_folder_name):
   
   mrc_wo_path = os.path.basename(mrc_w_path)
   mrc_wo_path_wo_ext = os.path.splitext(mrc_wo_path)[0]
-  
-  #mrc_wo_path_wo_ext_w_4_questions_marks = mrc_wo_path_wo_ext[:-5] + "_????"
-  # this seems wrong
-  # because it will return 
-  # 165749merged
-  # to
-  # 165749m__????
 
-  mrc_wo_path_wo_ext_w_4_questions_marks = mrc_wo_path_wo_ext + "_????"
+  mrc_wo_path_wo_ext_w_4_questions_marks = mrc_wo_path_wo_ext[:-5] + "_????"
+  
   
   print ("AutoMicroED is generating mrc2smv command.")
-  
   ############### <begin> check mrc2smv_folder
   if ('mrc2smv_folder' in args_dict.keys()):
     print_this = "mrc2smv_folder:" + str(args_dict['mrc2smv_folder'])
@@ -181,38 +168,35 @@ def run_mrc2smv(args_dict, mrc_w_path, output_folder_name):
 
   print (f"mrc_wo_path_wo_ext:{mrc_wo_path_wo_ext}")
   # tutorial -> 165749merged
+  # each mrc file -> 2021-06-15-165749_0004
 
   print (f"mrc_wo_path_wo_ext_w_4_questions_marks:{mrc_wo_path_wo_ext_w_4_questions_marks}")
-  # tutorial -> 165749m__????
+  # tutorial -> 165749merged_????
+  # each mrc file -> 2021-06-15-165749_0004_????
+
+#  a=b
 
   ############### <begin> distance
   print ("\n-d: sample-detector distance (mm).")
   
-  if (int(args_dict['sections']) != 1):
+  if (int(args_dict['sections']) > 1):
     combi_d_calibrated = ('d_calibrated', str(mrc_wo_path_wo_ext))
   else:
     combi_d_calibrated = ('d_calibrated', str(mrc_wo_path_wo_ext_w_4_questions_marks))
   
-  '''
-  if combi_d_calibrated not in args_dict:
-    if (int(args_dict['sections']) != 1):
-      combi_d_not_calibrated = ('d_not_calibrated', str(mrc_wo_path_wo_ext))
-    else:
-      combi_d_not_calibrated = ('d_not_calibrated', str(mrc_wo_path_wo_ext_w_4_questions_marks))
-    if combi_d_not_calibrated not in args_dict:
-      args_dict[combi_d_not_calibrated] = receive_from_user("-d_not_calibrated")
-    write_this = "d_not_calibrated from user: " + str(args_dict[combi_d_not_calibrated]) + \
-                " as the one displayed in user's cryo-EM machine (example, Krios)"
-    util.flog(write_this, logfile_name_w_abs_path)
-    '''
   
   if 'd_calibrated' not in args_dict:
-    if (int(args_dict['sections']) != 1):
+    if (int(args_dict['sections']) > 1):
       combi_d_not_calibrated = ('d_not_calibrated', str(mrc_wo_path_wo_ext))
     else:
       combi_d_not_calibrated = ('d_not_calibrated', str(mrc_wo_path_wo_ext_w_4_questions_marks))
     if combi_d_not_calibrated not in args_dict:
-      args_dict[combi_d_not_calibrated] = receive_from_user("-d_not_calibrated")
+      
+      #args_dict[combi_d_not_calibrated] = receive_from_user("-d_not_calibrated")
+      # error 3/15/2022
+
+      args_dict[combi_d_not_calibrated] = util.receive_from_user("-d_not_calibrated")
+
     write_this = "d_not_calibrated from user: " + str(args_dict[combi_d_not_calibrated]) + \
                 " as the one displayed in user's cryo-EM machine (example, Krios)"
     util.flog(write_this, args_dict['logfile_name_w_abs_path'])
@@ -289,7 +273,7 @@ def run_mrc2smv(args_dict, mrc_w_path, output_folder_name):
   print ("\tketone tutorial -> 0.9")
 
   if "r" not in args_dict:
-    if (int(args_dict['sections']) != 1):
+    if (int(args_dict['sections']) > 1):
       combi = ('r', str(mrc_wo_path_wo_ext)) # assumes that input mrc/mrc is stack
     else: # if (int(args_dict['sections']) == 1):
       combi = ('r', str(mrc_wo_path_wo_ext_w_4_questions_marks)) # assumes that input mrc/mrc is single 2D images
@@ -313,7 +297,7 @@ def run_mrc2smv(args_dict, mrc_w_path, output_folder_name):
   print ("\tketone tutorial -> 1")
   
   if "E" not in args_dict:
-    if (int(args_dict['sections']) != 1):
+    if (int(args_dict['sections']) > 1):
       combi = ('E', str(mrc_wo_path_wo_ext)) # assumes that input mrc/mrc is stack
     else: # if (int(args_dict['sections']) == 1):
       combi = ('E', str(mrc_wo_path_wo_ext_w_4_questions_marks)) # assumes that input mrc/mrc is single 2D images

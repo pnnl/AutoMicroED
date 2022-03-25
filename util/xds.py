@@ -81,27 +81,40 @@ def estimate_ORGX_ORGY_with_mrc_lib(args_dict, ORGX_ORGY, mrc_w_path):
   #mrc_w_path -> /gpustorage/MicroEDProc/SMP/combogrid_061521/2021-06-15-165749/165749merged.mrcs
 
   print_this = "\tA mrc file that will be used to estimate ORGX_ORGY_by_AutoMicroED:" + str(mrc_w_path)
-  
-
   util.flog(print_this, args_dict['logfile_name_w_abs_path'])
 
   mrc = load_density_file(mrc_w_path)
 
-  print (f"mrc:{mrc}")
+  #print (f"mrc:{mrc}")
   #MrcMemmap('/gpustorage/MicroEDProc/SMP/combogrid_061521/2021-06-15-165749/165749merged.mrcs', mode='r')
 
   #print (f"mrc.data:{mrc.data}")
+  # mrcs ->
   '''[[[-36. -36. -36. ... -39.   7. -19.]
   [  4.   4.   4. ... -11.  -4. -15.]
   [ 43.  43.  43. ... -54. -31. -37.]...'''
   
-  print (f"mrc.data.shape:{mrc.data.shape}")
-  #(120, 2048, 2048)
+  # mrc ->
+  '''[[-36. -36. -36. ... -39.   7. -19.]
+ [  4.   4.   4. ... -11.  -4. -15.]
+ [ 43.  43.  43. ... -54. -31. -37.]...'''
+
+  
+
+
+  #print (f"mrc.data.shape:{mrc.data.shape}")
+  #mrcs -> (120, 2048, 2048)
+  #mrc  -> (2048, 2048)
+
+
+  #print (f"len(mrc.data.shape):{len(mrc.data.shape)}")
+  #mrc  -> 2
+
 
   use_this_mrc = int(mrc.data.shape[0]/2)
   
-  print (f"mrc.data[use_this_mrc]:{mrc.data[use_this_mrc]}")
-  print (f"type(mrc.data[use_this_mrc]):{type(mrc.data[use_this_mrc])}")
+  # print (f"mrc.data[use_this_mrc]:{mrc.data[use_this_mrc]}")
+  # print (f"type(mrc.data[use_this_mrc]):{type(mrc.data[use_this_mrc])}")
 
   #print (f"np.mean(mrc.data[use_this_mrc]):{np.mean(mrc.data[use_this_mrc])}")
   #22.31913948059082
@@ -110,33 +123,92 @@ def estimate_ORGX_ORGY_with_mrc_lib(args_dict, ORGX_ORGY, mrc_w_path):
   
   lower_limit = half*0.925
   upper_limit = half*1.075
-  
+  # print (f"half:{half}")
+  # # mrc -> 1024.0
+
+  # print (f"lower_limit:{lower_limit}")
+  #     #947.2
+  # print (f"upper_limit:{upper_limit}")
+      #1100.8
+
   
   avg = np.mean(mrc.data[use_this_mrc])
-  
+  #print (f"avg:{avg}")
+  #mrc -> 95.9208984375
+
+
   img = mrc.data[use_this_mrc]
+
+  #print (f"type(img):{type(img)}")
+  #mrcs-> <class 'numpy.memmap'>
+  #mrc ->  class 'numpy.memmap'>  
+
+
+  #print (f"img.shape:{img.shape}")
+  #mrcs -> (2048, 2048)
+  #mrc -> (2048,)
+
+  #print (f"len(img):{len(img)}")
+  #mrcs -> 2048
+  #mrc -> 2048
+
+  #print (f"type(img[0][0]):{type(img[0][0])}")
+  #mrcs -> <class 'numpy.float32'>
+  # mrc -> IndexError: invalid index to scalar variable.
+
+
+  #print (f"len(img[0]):{len(img[0])}")
+  # mrcs ->2048
+  # mrc -> TypeError: object of type 'numpy.float32' has no len()
+
 
   x_for_above_avg_pixel_array = []
   y_for_above_avg_pixel_array = []
-  for x in range(len(img)):
-    if (x < lower_limit) or (x > upper_limit):
-      continue
-    for y in range(len(img[0])):
-      if (y < lower_limit) or (y > upper_limit):
+
+  if len(mrc.data.shape) == 3:
+    #print (f"type(img[0][0]):{type(img[0][0])}")
+    #mrcs -> <class 'numpy.float32'>
+    for x in range(len(img)):
+      if (x < lower_limit) or (x > upper_limit):
         continue
-      pixel = img[x][y]
+      
+      for y in range(len(img[0])):
+        if (y < lower_limit) or (y > upper_limit):
+          continue
+        pixel = img[x][y]
+        if (pixel > avg):
+          x_for_above_avg_pixel_array.append(x)
+          y_for_above_avg_pixel_array.append(y)
+    #print (f"x_for_above_avg_pixel_array:{x_for_above_avg_pixel_array}")
+    if (ORGX_ORGY == "ORGX"):
+      ORGX= int(np.mean(x_for_above_avg_pixel_array))
+      print (f"ORGX:{ORGX}")
+      return ORGX
+    else:
+      ORGY= int(np.mean(y_for_above_avg_pixel_array))
+      print (f"ORGY:{ORGY}")
+      return ORGY
+  else:
+    for x in range(len(img)):
+      
+      if (x < lower_limit) or (x > upper_limit):
+        continue
+        
+        #print (f"type(img[x]):{type(img[x])}")
+        #<class 'numpy.float32'>
+
+      pixel = img[x]
       if (pixel > avg):
         x_for_above_avg_pixel_array.append(x)
-        y_for_above_avg_pixel_array.append(y)
-   
-  if (ORGX_ORGY == "ORGX"):
-    ORGX= int(np.mean(x_for_above_avg_pixel_array))
-    print (f"ORGX:{ORGX}")
-    return ORGX
-  else:
-    ORGY= int(np.mean(y_for_above_avg_pixel_array))
-    print (f"ORGY:{ORGY}")
-    return ORGY
+
+    if (ORGX_ORGY == "ORGX"):
+      ORGX= int(np.mean(x_for_above_avg_pixel_array))
+      print (f"ORGX:{ORGX}")
+      return ORGX
+    else:
+      ORGY= int(np.mean(x_for_above_avg_pixel_array))
+      print (f"ORGY:{ORGY}")
+      return ORGY
 
 ############ end of def estimate_ORGX_ORGY_with_mrc_lib(ORGX_ORGY, mrc_w_path, logfile_name_w_abs_path):
 
@@ -378,7 +450,19 @@ def run_xds(args_dict, mrc_w_path, output_folder_name):
   write_this = "INCLUDE_RESOLUTION_RANGE to use: " + str(args_dict['INCLUDE_RESOLUTION_RANGE'])
   util.flog(write_this, args_dict['logfile_name_w_abs_path'])
   
+
+  '''
+  # temp test  
+  ORGXY = "ORGX"
+  #mrc_w_path_temp = os.path.join(mrc_w_path, "170629merged_0158.adx")
+  mrc_w_path_temp = os.path.join(mrc_w_path, "170629merged_0158.img")
+  args_dict[combi] = estimate_ORGX_ORGY_with_mrc_lib(args_dict, str(ORGXY), mrc_w_path_temp)
+  -> both adx and imge -> ValueError: Map ID string not found - not an MRC file, or file is corrupt
+  '''
+
   
+
+
   ##### <begin> assign ORGX/ORGY in XDS.INP
   if (args_dict['input_list_has_mrc'] == True):
     ORG_list = ["ORGX", "ORGY"]
