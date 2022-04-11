@@ -2,17 +2,10 @@
 # Words after # are comments
 
 
-
 ######## <begin> Assign pathways of binaries (executables)
-
-IMOD_folder /home/scicons/cascade/apps/imod/4.10.16/IMOD/bin
-
 mrc2smv_folder /home/kimd999/bin/tvips-tools-jiffies-20190827-linux64
-
 ccp4_folder /home/kimd999/bin/ccp4/ccp4-7.1/bin
-
 ######## <end> Assign pathways of binaries (executables)
-
 
 
 ######## <begin> mrc2smv

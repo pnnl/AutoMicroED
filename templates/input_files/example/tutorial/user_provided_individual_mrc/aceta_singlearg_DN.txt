@@ -1,10 +1,13 @@
+outdir single_mrc 
+
 ######## <begin> mrc2smv
+
 mrc2smv_folder /opt/apps/tvips-tools-jiffies-20190827-linux64
 
-Bypass_movie_inspection False
+Bypass_movie_inspection True
 
-d_not_calibrated 165749merged 430
-d_not_calibrated 170629merged 430
+d_not_calibrated 2021-06-15-165749_???? 430
+d_not_calibrated 2021-06-15-170629_???? 430
 
 d_calibration_coef 1.8 -14.53
 
@@ -18,14 +21,14 @@ E 1
 
 P 0.028
 
-Bypass_image_inspection False
+Bypass_image_inspection True
 ######## <end> mrc2smv 
 
 
 ######## <begin> xds
 Bypass_spot2pdb_inspection False
 
-multi_core_xds False
+mutl_core_xds False
 
 least_completeness_overall 95
 
@@ -33,8 +36,8 @@ ROTATION_AXIS -1 0 0
 
 SPACE_GROUP_NUMBER 0
 
-STARTING_ANGLE 165749merged -65
-STARTING_ANGLE 170629merged -65
+STARTING_ANGLE 2021-06-15-165749_???? -65
+STARTING_ANGLE 2021-06-15-170629_???? -65
 
 TEST_RESOLUTION_RANGE 4 0.5
 ######## <end> xds
@@ -43,7 +46,7 @@ TEST_RESOLUTION_RANGE 4 0.5
 ######## <begin> analysis after xds
 generate_adx_folder /opt/apps/AutoMicroED/
 
-Bypass_generate_adx_inspection False
+Bypass_generate_adx_inspection True
 ######## <end> analysis after xds
 
 

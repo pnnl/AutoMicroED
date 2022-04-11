@@ -1,9 +1,9 @@
 from datetime import datetime as dt
-import codecs, os, shutil, subprocess, sys, time
+import codecs, glob, os, random, shutil, subprocess, sys, time
+import matplotlib.image as mpimg
 import mrcfile
 import numpy as np
 import util
-
 
 home_dir_path = os.path.expanduser("~")
 
@@ -24,7 +24,6 @@ print_this = print_this + "\n\t\t If you have a reasonable estimate (from one of
 print_this = print_this + "\n\t\t This works best if COLSPOT has seen a significant fraction of all frames. This procedure is documented."
 print_this_for_ORGXY = print_this + "\n\t\t (note) At least with Doo Nam's experience, finding true ORGX ORGY by inspecting IDXREF.LP was not feasible."
 ## <end> writing print_this_for_ORGXY
-
 
 
 def add_BEAM_DIVERGENCE_REFLECTING_RANGE(args_dict):
@@ -77,13 +76,74 @@ def add_DELPHI_10(logfile_name_w_abs_path):
 ############# end of def add_DELPHI_10()
 
 
+def estimate_ORGX_ORGY_with_ImageMagick(args_dict, ORGX_ORGY, input_smv_file):
+  print_this = "\tA smv file that will be used to estimate ORGX_ORGY:" + str(input_smv_file)
+  util.flog(print_this, args_dict['logfile_name_w_abs_path'])
+
+  half = int(args_dict['NX'])/2
+  
+  lower_limit = half*0.925
+  upper_limit = half*1.075
+
+  print (f"upper_limit:{upper_limit}")
+
+  output_png_file = input_smv_file[:-4] + ".png"
+  cmd = "convert -depth 16 -type Grayscale -colorspace GRAY -endian LSB -size 2048x2048+512 GRAY:" + str(input_smv_file) + " -negate -normalize " + str(output_png_file)
+  util.flog(cmd, args_dict['logfile_name_w_abs_path'])
+  os.system(cmd)
+
+  ORGX_ORGY = estimate_ORGX_ORGY_by_img_avg(args_dict, ORGX_ORGY, output_png_file)
+  return ORGX_ORGY
+############ end of def estimate_ORGX_ORGY_with_ImageMagick(ORGX_ORGY, mrc_w_path, logfile_name_w_abs_path):
+
+
+def estimate_ORGX_ORGY_by_img_avg(args_dict, ORGX_ORGY, image_file_name):
+  half = int(args_dict['NX'])/2
+  
+  lower_limit = half*0.925
+  upper_limit = half*1.075
+  
+  img = mpimg.imread(image_file_name)
+  all_pixels = []
+  for x in range(len(img)):
+    if (x < lower_limit) or (x > upper_limit):
+      continue
+    for y in range(len(img[0])):
+      if (y < lower_limit) or (y > upper_limit):
+        continue
+      pixel = img[x][y]
+      all_pixels.append(pixel)
+  avg = np.mean(all_pixels)
+  
+  x_for_above_avg_pixel_array = []
+  y_for_above_avg_pixel_array = []
+  for x in range(len(img)):
+    if (x < lower_limit) or (x > upper_limit):
+      continue
+    for y in range(len(img[0])):
+      if (y < lower_limit) or (y > upper_limit):
+        continue
+      pixel = img[x][y]
+      if (pixel > avg):
+        x_for_above_avg_pixel_array.append(x)
+        y_for_above_avg_pixel_array.append(y)
+  
+  if (ORGX_ORGY == "ORGX"):
+    ORGX= int(np.mean(x_for_above_avg_pixel_array))
+    return ORGX
+  else:
+    ORGY= int(np.mean(y_for_above_avg_pixel_array))
+    return ORGY
+######## end of def estimate_ORGX_ORGY_by_img_avg(image_file_name):
+
+
 def estimate_ORGX_ORGY_with_mrc_lib(args_dict, ORGX_ORGY, mrc_w_path):
   #mrc_w_path -> /gpustorage/MicroEDProc/SMP/combogrid_061521/2021-06-15-165749/165749merged.mrcs
 
-  print_this = "\tA mrc file that will be used to estimate ORGX_ORGY_by_AutoMicroED:" + str(mrc_w_path)
+  print_this = "\tA mrc file that will be used to estimate ORGX_ORGY:" + str(mrc_w_path)
   util.flog(print_this, args_dict['logfile_name_w_abs_path'])
 
-  mrc = load_density_file(mrc_w_path)
+  mrc = util.load_density_file(mrc_w_path)
 
   #print (f"mrc:{mrc}")
   #MrcMemmap('/gpustorage/MicroEDProc/SMP/combogrid_061521/2021-06-15-165749/165749merged.mrcs', mode='r')
@@ -99,17 +159,12 @@ def estimate_ORGX_ORGY_with_mrc_lib(args_dict, ORGX_ORGY, mrc_w_path):
  [  4.   4.   4. ... -11.  -4. -15.]
  [ 43.  43.  43. ... -54. -31. -37.]...'''
 
-  
-
-
   #print (f"mrc.data.shape:{mrc.data.shape}")
   #mrcs -> (120, 2048, 2048)
   #mrc  -> (2048, 2048)
 
-
   #print (f"len(mrc.data.shape):{len(mrc.data.shape)}")
   #mrc  -> 2
-
 
   use_this_mrc = int(mrc.data.shape[0]/2)
   
@@ -213,8 +268,6 @@ def estimate_ORGX_ORGY_with_mrc_lib(args_dict, ORGX_ORGY, mrc_w_path):
 ############ end of def estimate_ORGX_ORGY_with_mrc_lib(ORGX_ORGY, mrc_w_path, logfile_name_w_abs_path):
 
 
-
-
 def get_BEAM_DIVERGENCE_REFLECTING_RANGE(args_dict):
   write_this = "\ncurrent working directory: " + str(os.getcwd()) + "\n"
   util.flog(write_this, args_dict['logfile_name_w_abs_path'])
@@ -275,24 +328,6 @@ def get_ISa(args_dict, use_this_file_get_ISa):
   ISa = splited_extracted[2]
   return ISa
 ########## end of def get_ISa():
-
-
-def load_density_file(fname):
-    """load a .mrc file using the mrcfile package
-
-    Args:
-        fname ([str]): filename / filepath
-
-    Returns:
-        [mrcfile object]: MRC data 
-    """ 
-    # load .mrc tomogram file as a MRC object which has header and data properties. 
-    # see: https://mrcfile.readthedocs.io/en/latest/usage_guide.html 
-    mrc = mrcfile.mmap(fname, mode=u'r')  # memory mapped mode for large files
-    #print(f"mrc.is_image_stack():{mrc.is_image_stack()}")  # check if mrc is an image stack 
-    #print(f"mrc.is_volume():{mrc.is_volume()}")  # check if mrc is a volume
-    return mrc
-##### end of def load_density_file(fname):
 
 
 def loop_BEAM_DIVERGENCE_REFLECTING_RANGE(args_dict, xds_log_filename_wo_ext, xds_kind, \
@@ -434,11 +469,12 @@ def run_xds(args_dict, mrc_w_path, output_folder_name):
     print (f"mrc_wo_path:{mrc_wo_path}")
 
   mrc_wo_path_wo_ext = os.path.splitext(mrc_wo_path)[0]
-  
+  print (f"mrc_wo_path_wo_ext:{mrc_wo_path_wo_ext}")
+  # when individual mrc is provided -> 2021-06-15-165749_0004
 
   if (args_dict['input_list_has_mrc'] == True):
     if (int(args_dict['sections']) == 1):
-      mrc_wo_path_wo_ext_w_4_questions_marks = mrc_wo_path_wo_ext[:-5] + "_????"
+      mrc_wo_path_wo_ext_w_4_question_marks = mrc_wo_path_wo_ext[:-5] + "_????"
     
   os.chdir("../xds")
   
@@ -451,46 +487,31 @@ def run_xds(args_dict, mrc_w_path, output_folder_name):
   util.flog(write_this, args_dict['logfile_name_w_abs_path'])
   
 
-  '''
-  # temp test  
-  ORGXY = "ORGX"
-  #mrc_w_path_temp = os.path.join(mrc_w_path, "170629merged_0158.adx")
-  mrc_w_path_temp = os.path.join(mrc_w_path, "170629merged_0158.img")
-  args_dict[combi] = estimate_ORGX_ORGY_with_mrc_lib(args_dict, str(ORGXY), mrc_w_path_temp)
-  -> both adx and imge -> ValueError: Map ID string not found - not an MRC file, or file is corrupt
-  '''
-
-  
-
-
   ##### <begin> assign ORGX/ORGY in XDS.INP
-  if (args_dict['input_list_has_mrc'] == True):
-    ORG_list = ["ORGX", "ORGY"]
-    for ORGXY in ORG_list:
+  ORG_list = ["ORGX", "ORGY"]
+  for ORGXY in ORG_list:
+    if (args_dict['input_list_has_mrc'] == True):
       if (int(args_dict['sections']) == 1):
-        combi = (ORGXY, str(mrc_wo_path_wo_ext_w_4_questions_marks)) # mrc_wo_path has .mrc/.mrcs extension
+        combi = (ORGXY, str(mrc_wo_path_wo_ext_w_4_question_marks)) # mrc_wo_path has .mrc/.mrcs extension
+        print (f"combi:{combi}") #('ORGX', '2021-06-15-165749_????')
       else:
         combi = (ORGXY, str(mrc_wo_path_wo_ext)) # mrc_wo_path has .mrc/.mrcs extension
-
+        print (f"combi:{combi}") #('ORGX', '165749merged')
+      
       if (combi not in args_dict):
         print_this = "(note)  AutoMicroED doesn't see " + str(ORGXY) + " in a user-provided args_file."
         print_this = print_this + "\n\t\t\t\tTherefore, it will locate " + str(ORGXY) + " automatically with help from mrclibrary."
         util.flog(print_this, args_dict['logfile_name_w_abs_path'])
         
-
-        ####new using mrc lib
         ORGXY_start_time = time.time()
-          
         args_dict[combi] = estimate_ORGX_ORGY_with_mrc_lib(args_dict, str(ORGXY), mrc_w_path)
-        
         ORGXY_end_time = time.time()
   
-        write_this = util.show_time("estimate_ORGX_ORGY_by_AutoMicroED", ORGXY_start_time, ORGXY_end_time)
+        write_this = util.show_time("Estimation of ORGX_ORGY", ORGXY_start_time, ORGXY_end_time)
         util.flog(write_this, args_dict['logfile_name_w_abs_path'])
         
         print_this = str(ORGXY) + " is automatically estimated by AutoMicroED (e.g. " + str(args_dict[combi]) + ")"
         util.flog(print_this, args_dict['logfile_name_w_abs_path'])
-
          
         print_this = "\t\t(tip) Enter \"bypass\" and hit enter key if a user wants to add current " + str(ORGXY) \
                    + " in an argument file (so that this automatic estimation of " + str(ORGXY) + " can be bypassed next time when user runs AutoMicroED again).\n"
@@ -512,15 +533,33 @@ def run_xds(args_dict, mrc_w_path, output_folder_name):
         util.flog(print_this, args_dict['logfile_name_w_abs_path'])
       write_this = str(ORGXY) + " to write into XDS.INP: " + str(args_dict[combi])
       util.flog(write_this, args_dict['logfile_name_w_abs_path'])
+    else: # For smv input folder, args_dict['sections'] != 1 (could be 120)
+      combi = (ORGXY, str(mrc_wo_path_wo_ext)) 
+      print (f"combi:{combi}") 
+      
+      if (combi not in args_dict):
+        print_this = "\tsmv_folder:" + str(mrc_w_path)
+        util.flog(print_this, args_dict['logfile_name_w_abs_path'])
+
+        glob_this = os.path.join(mrc_w_path,"*.img")
+        list_of_img = glob.glob(glob_this)  
+        random_index = random.randint(0,len(list_of_img)-1)
+        input_smv_file = list_of_img[random_index]
+
+        input_smv_file_wo_ext = os.path.splitext(input_smv_file)[0]
+        input_smv_file_wo_ext_wo_path = os.path.basename(input_smv_file_wo_ext)
+
+        input_smv_file_wo_ext_wo_path_w_4_question_marks = input_smv_file_wo_ext_wo_path[:-5] + "_????"
+        combi = (ORGXY, str(input_smv_file_wo_ext_wo_path_w_4_question_marks))
+
+        args_dict[combi] = estimate_ORGX_ORGY_with_ImageMagick(args_dict, str(ORGXY), input_smv_file)
   ##### <end> assign ORGX/ORGY in XDS.INP
 
   
-  ##### <end> assign ROTATION_AXIS in XDS.INP
   if ("ROTATION_AXIS" not in args_dict):
     args_dict['ROTATION_AXIS'] = "-1 0 0" # James wants to use -1 0 0
   write_this = "ROTATION_AXIS to use in XDS.INP: " + str(args_dict['ROTATION_AXIS'])
   util.flog(write_this, args_dict['logfile_name_w_abs_path'])
-  ##### <end> assign ROTATION_AXIS in XDS.INP  
 
   
   if ("spot2pdb_RESOLUTION_RANGE_max" in args_dict):
@@ -594,11 +633,7 @@ def run_xds(args_dict, mrc_w_path, output_folder_name):
   
   xds_kind_list = ["xds"]
 
-
-
-
   for xds_kind in xds_kind_list:
-    
     process = str(xds_kind) + " to process " + str(mrc_w_path)
     util.show_header(process)
     start_time = time.time()
@@ -843,9 +878,9 @@ def XDS_default(args_dict, mrc_wo_path, output_folder_name, xds_kind):
   mrc_wo_path_wo_ext = os.path.splitext(mrc_wo_path)[0]
 
   if (args_dict['input_list_has_mrc'] == False):
-    mrc_wo_path_wo_ext_w_4_questions_marks = mrc_wo_path_wo_ext + "_????"
+    mrc_wo_path_wo_ext_w_4_question_marks = mrc_wo_path_wo_ext + "_????"
   else:
-    mrc_wo_path_wo_ext_w_4_questions_marks = mrc_wo_path_wo_ext[:-5] + "_????"
+    mrc_wo_path_wo_ext_w_4_question_marks = mrc_wo_path_wo_ext[:-5] + "_????"
   
   f_in  = codecs.open("XDS_template.INP", 'r') 
   
@@ -856,18 +891,14 @@ def XDS_default(args_dict, mrc_wo_path, output_folder_name, xds_kind):
     if (line[:17] == "BACKGROUND_RANGE="):
       write_this = "BACKGROUND_RANGE=" + str(args_dict['min_DATA_RANGE']) + " " + str(args_dict['max_DATA_RANGE']) + "\n"
       f_out.write(write_this)
-
     elif (line[:15] == "CLUSTER_RADIUS="):
       write_this = "CLUSTER_RADIUS=7 \n"
       f_out.write(write_this)
-      
     elif (line[:11] == "DATA_RANGE="):
       write_this = "DATA_RANGE=" + str(args_dict['min_DATA_RANGE']) + " " \
         + str(args_dict['max_DATA_RANGE']) + "\n"
       f_out.write(write_this)
-    
     elif (line[:18] == "DETECTOR_DISTANCE="):
-
       if 'd_calibrated' not in args_dict:
         print (f"args_dict['sections']:{args_dict['sections']}")
         # tutorial -> 120
@@ -879,7 +910,7 @@ def XDS_default(args_dict, mrc_wo_path, output_folder_name, xds_kind):
         if (int(args_dict['sections']) != 1):
           combi_d_calibrated = ('d_calibrated', str(mrc_wo_path_wo_ext))
         else:
-          combi_d_calibrated = ('d_calibrated', str(mrc_wo_path_wo_ext_w_4_questions_marks))
+          combi_d_calibrated = ('d_calibrated', str(mrc_wo_path_wo_ext_w_4_question_marks))
         
         print (f"combi_d_calibrated:{combi_d_calibrated}")
         # tutorial -> ('d_calibrated', '165749merged')
@@ -890,20 +921,14 @@ def XDS_default(args_dict, mrc_wo_path, output_folder_name, xds_kind):
       else:
         write_this = "DETECTOR_DISTANCE=" + str(args_dict['d_calibrated']) + "\n"
       f_out.write(write_this)
-    
     elif (line[:27] == "! INCLUDE_RESOLUTION_RANGE="):
       write_this = "INCLUDE_RESOLUTION_RANGE=" + str(args_dict['INCLUDE_RESOLUTION_RANGE']) + " \n"
       f_out.write(write_this)
-    
     elif (line[:29] == "NAME_TEMPLATE_OF_DATA_FRAMES="):
       os.chdir("..")
       cwd = os.getcwd() # this is essential, weird, but keep this
 
-      
       img_folder = os.path.join(os.path.normpath(cwd), "img")
-
-      
-
       if 'prefix_of_img_file' in args_dict:
         # newer (more generalizable) method
         prefix_folder = os.path.join(img_folder, args_dict['prefix_of_img_file'])
@@ -911,18 +936,14 @@ def XDS_default(args_dict, mrc_wo_path, output_folder_name, xds_kind):
         # old method
         prefix_folder = os.path.join(img_folder, output_folder_name)
 
-
-
       os.chdir("xds")
       path_of_img = prefix_folder + "_????.img"
-
-
 
       ## <begin> check whether user specifies imge name as output_folder_name or prefix_of_img_file
       prefix_of_img_file_exists = False
       output_folder_name_exists = False
       for each_img_file in os.listdir(img_folder):
-        if each_img_file.endswith(".img") or each_img_file.endswith(".smv"):
+        if each_img_file.endswith(".img"): # this is smv file
           if 'prefix_of_img_file' in args_dict:
             if args_dict['prefix_of_img_file'] in each_img_file:
               prefix_of_img_file_exists = True
@@ -937,11 +958,8 @@ def XDS_default(args_dict, mrc_wo_path, output_folder_name, xds_kind):
           break
       ## <end> check whether user specifies imge name as output_folder_name or prefix_of_img_file
 
-
-
       write_this = "NAME_TEMPLATE_OF_DATA_FRAMES=" + str(path_of_img) + "\n"
       f_out.write(write_this)
-      
     elif (line[:3] == "NX="):
       if ('NX' in args_dict.keys()):
           write_this = "NX=" + str(args_dict['NX']) + " \n"
@@ -953,7 +971,6 @@ def XDS_default(args_dict, mrc_wo_path, output_folder_name, xds_kind):
          # Used by XYCORR, INIT, COLSPOT, IDXREF.
          # IMOD's command, header <mrc/mrcs filename> will show number of columns, rows.
          # Therefore, AutoMicroED just uses this value as NX.'''
-         
     elif (line[:3] == "NY="):
       if ('NY' in args_dict.keys()):
           write_this = "NY=" + str(args_dict['NY']) + " \n"
@@ -961,33 +978,32 @@ def XDS_default(args_dict, mrc_wo_path, output_folder_name, xds_kind):
         args_dict['NY'] = receive_from_user("NY")
         write_this = "NY=" + str(args_dict['NY']) + " \n"
       f_out.write(write_this)
-      
     elif (line[:7] == "OFFSET="):
       write_this = "OFFSET=128\n"
       f_out.write(write_this)
-
     elif (line[:5] == "ORGX="):
-
       if ("ORGX" in args_dict):
         write_this = "ORGX=" + str(args_dict["ORGX"]) + "\n"
         f_out.write(write_this)
       else:
         if (args_dict['input_list_has_mrc'] == False):
-          #if (args_dict['user_named_img_file_wo_output_folder_name'] == True):
-          #  mrc_wo_path_wo_ext_w_4_questions_marks = args_dict['prefix_of_img_file'] + "_????"
-
-          combi = ('ORGX', str(mrc_wo_path_wo_ext_w_4_questions_marks))
-        else:
-          if (int(args_dict['sections']) != 1):
-            combi = ('ORGX', str(mrc_wo_path_wo_ext))
-          else:
-            combi = ('ORGX', str(mrc_wo_path_wo_ext_w_4_questions_marks))
-
-        if (combi in args_dict):
-          write_this = "ORGX=" + str(args_dict[combi]) + "\n"
+          for i in range(len(list(args_dict.keys()))):
+            if (len(list(args_dict.keys())[i])) == 2:
+              if str(list(args_dict.keys())[i][0]) == "ORGX":
+                ORGX = list(args_dict.values())[i]
+          write_this = "ORGX=" + str(ORGX) + "\n"
           f_out.write(write_this)
         else:
-          f_out.write(line)
+          if (int(args_dict['sections']) > 1):
+            combi = ('ORGX', str(mrc_wo_path_wo_ext))
+          else:
+            combi = ('ORGX', str(mrc_wo_path_wo_ext_w_4_question_marks))
+
+          if (combi in args_dict):
+            write_this = "ORGX=" + str(args_dict[combi]) + "\n"
+            f_out.write(write_this)
+          else:
+            f_out.write(line)
       
     elif (line[:5] == "ORGY="):
       if ("ORGY" in args_dict):
@@ -995,20 +1011,23 @@ def XDS_default(args_dict, mrc_wo_path, output_folder_name, xds_kind):
         f_out.write(write_this)
       else:
         if (args_dict['input_list_has_mrc'] == False):
-          #if (args_dict['user_named_img_file_wo_output_folder_name'] == True):
-          #  mrc_wo_path_wo_ext_w_4_questions_marks = args_dict['prefix_of_img_file'] + "_????"
-          combi = ('ORGY', str(mrc_wo_path_wo_ext_w_4_questions_marks))
-        else:
-          if (int(args_dict['sections']) != 1):
-            combi = ('ORGY', str(mrc_wo_path_wo_ext))
-          else:
-            combi = ('ORGY', str(mrc_wo_path_wo_ext_w_4_questions_marks))
-
-        if (combi in args_dict):
-          write_this = "ORGY=" + str(args_dict[combi]) + "\n"
+          for i in range(len(list(args_dict.keys()))):
+            if (len(list(args_dict.keys())[i])) == 2:
+              if str(list(args_dict.keys())[i][0]) == "ORGY":
+                ORGY = list(args_dict.values())[i]
+          write_this = "ORGY=" + str(ORGY) + "\n"
           f_out.write(write_this)
         else:
-          f_out.write(line)
+          if (int(args_dict['sections']) > 1):
+            combi = ('ORGY', str(mrc_wo_path_wo_ext))
+          else:
+            combi = ('ORGY', str(mrc_wo_path_wo_ext_w_4_question_marks))
+
+          if (combi in args_dict):
+            write_this = "ORGY=" + str(args_dict[combi]) + "\n"
+            f_out.write(write_this)
+          else:
+            f_out.write(line)
 
     elif (line[:18] == "OSCILLATION_RANGE="):
       if (args_dict['input_list_has_mrc'] == True):
@@ -1030,14 +1049,14 @@ def XDS_default(args_dict, mrc_wo_path, output_folder_name, xds_kind):
         else:
           if "E" not in args_dict:
             if "r" not in args_dict:
-              write_this = "OSCILLATION_RANGE=" + str(float(args_dict['r', str(mrc_wo_path_wo_ext_w_4_questions_marks)])\
-                                                     *float(args_dict['E', str(mrc_wo_path_wo_ext_w_4_questions_marks)])) + " \n"
+              write_this = "OSCILLATION_RANGE=" + str(float(args_dict['r', str(mrc_wo_path_wo_ext_w_4_question_marks)])\
+                                                     *float(args_dict['E', str(mrc_wo_path_wo_ext_w_4_question_marks)])) + " \n"
             else:
               write_this = "OSCILLATION_RANGE=" + str(float(args_dict['r'])\
-                                                     *float(args_dict['E', str(mrc_wo_path_wo_ext_w_4_questions_marks)])) + " \n"
+                                                     *float(args_dict['E', str(mrc_wo_path_wo_ext_w_4_question_marks)])) + " \n"
           else:
             if "r" not in args_dict:
-              write_this = "OSCILLATION_RANGE=" + str(float(args_dict['r', str(mrc_wo_path_wo_ext_w_4_questions_marks)])\
+              write_this = "OSCILLATION_RANGE=" + str(float(args_dict['r', str(mrc_wo_path_wo_ext_w_4_question_marks)])\
                                                      *float(args_dict['E'])) + " \n"
             else:
               write_this = "OSCILLATION_RANGE=" + str(float(args_dict['r'])\
@@ -1104,11 +1123,8 @@ def XDS_default(args_dict, mrc_wo_path, output_folder_name, xds_kind):
         if (int(args_dict['sections']) != 1):
           combi = ('STARTING_ANGLE', str(mrc_wo_path_wo_ext))
         else:
-          combi = ('STARTING_ANGLE', str(mrc_wo_path_wo_ext_w_4_questions_marks))
+          combi = ('STARTING_ANGLE', str(mrc_wo_path_wo_ext_w_4_question_marks))
       else:
-        #print (f"mrc_wo_path_wo_ext:{mrc_wo_path_wo_ext}")
-        #print (f"mrc_wo_path_wo_ext_w_4_questions_marks:{mrc_wo_path_wo_ext_w_4_questions_marks}")
-
         if (args_dict['user_named_img_file_wo_output_folder_name'] == True):
           mrc_wo_path_wo_ext = args_dict['prefix_of_img_file'] + "_????"
 
@@ -1178,9 +1194,9 @@ def XDS_default(args_dict, mrc_wo_path, output_folder_name, xds_kind):
       write_this = str(args_dict[combi]) + "\n"
       f_out.write(write_this)
 
-    print (f"mrc_wo_path_wo_ext_w_4_questions_marks:{mrc_wo_path_wo_ext_w_4_questions_marks}")
+    print (f"mrc_wo_path_wo_ext_w_4_question_marks:{mrc_wo_path_wo_ext_w_4_question_marks}")
     
-    combi = ('EXCLUDE_DATA_RANGE', str(mrc_wo_path_wo_ext_w_4_questions_marks))
+    combi = ('EXCLUDE_DATA_RANGE', str(mrc_wo_path_wo_ext_w_4_question_marks))
 
     print (f"combi:{combi}")
 
@@ -1188,7 +1204,6 @@ def XDS_default(args_dict, mrc_wo_path, output_folder_name, xds_kind):
       write_this = str(args_dict[combi]) + "\n"
       f_out.write(write_this)
     
-
     # print_this = "\nPress enter to continue.\n"
     # input(print_this)
   
@@ -1323,6 +1338,7 @@ def XDS_sliding_SPOT_RANGE(args_dict, output_folder_name, xds_kind):
     return xds_log_filename
 ############# end of def XDS_sliding_SPOT_RANGE()
 
+
 def XDS_shorter_DATA_RANGE_shorter_JOB(args_dict, xds_kind):
   util.flog("CORRECT.LP not found.", args_dict['logfile_name_w_abs_path'])
   util.flog("Therefore, AutoMicroED will try shorter DATA_RANGE and JOB=DEFPIX INTEGRATE CORRECT\n", args_dict['logfile_name_w_abs_path'])
@@ -1353,4 +1369,3 @@ def XDS_shorter_DATA_RANGE_shorter_JOB(args_dict, xds_kind):
   run_xds_now(args_dict, xds_log_filename_wo_ext, xds_kind)
   return xds_log_filename_wo_ext
 ############# end of def XDS_shorter_DATA_RANGE_shorter_JOB()
-

@@ -1,9 +1,8 @@
-from datetime import datetime as dt
 from math import isclose
-import argparse, codecs, glob, os, platform, random, shutil, signal, subprocess, sys, time
+import argparse, codecs, glob, os, platform, random, shutil, signal, subprocess, sys, tifffile, time
+from PIL import Image
 import protein, shelx, xds, xscale
 import util
-
 
 home_dir_path = os.path.expanduser("~")
 user_ID = os.path.basename(home_dir_path)
@@ -133,16 +132,25 @@ def remove_first_and_last_image_files(output_folder_name):
 ########## end of def remove_first_and_last_image_files()
 
 
-def run_mrc2smv(args_dict, mrc_w_path, output_folder_name):  
-  process = "mrc2smv with " + str(mrc_w_path)
+def run_mrc2smv_by_PIL(args_dict, mrc_w_path, output_folder_name):
+  process = "mrc2smv by PIL with " + str(mrc_w_path)
+  util.show_header(process)
+  start_time = time.time()
+  
+  im = Image.open(mrc_w_path)
+  print(im.format, im.size, im.mode)
+  im.show()
+##### end of def run_mrc2smv_by_PIL(args_dict, mrc_w_path, output_folder_name):
+
+
+def run_mrc2smv_by_tvips(args_dict, mrc_w_path, output_folder_name):  
+  process = "mrc2smv by tvips with " + str(mrc_w_path)
   util.show_header(process)
   start_time = time.time()
   
   mrc_wo_path = os.path.basename(mrc_w_path)
   mrc_wo_path_wo_ext = os.path.splitext(mrc_wo_path)[0]
-
   mrc_wo_path_wo_ext_w_4_questions_marks = mrc_wo_path_wo_ext[:-5] + "_????"
-  
   
   print ("AutoMicroED is generating mrc2smv command.")
   ############### <begin> check mrc2smv_folder
@@ -174,7 +182,6 @@ def run_mrc2smv(args_dict, mrc_w_path, output_folder_name):
   # tutorial -> 165749merged_????
   # each mrc file -> 2021-06-15-165749_0004_????
 
-#  a=b
 
   ############### <begin> distance
   print ("\n-d: sample-detector distance (mm).")
@@ -343,7 +350,7 @@ def run_mrc2smv(args_dict, mrc_w_path, output_folder_name):
   # if (platform.system() == "Linux"):
   #   if ('PNNL_HPC_Cascade_sbatch' in args_dict.keys()):
   #     if (args_dict['PNNL_HPC_Cascade_sbatch'] == "True"): 
-  #       run_mrc2smv_at_PNNL_HPC_Cascade(args_dict['repo_location'], command)
+  #       run_mrc2smv_by_tvips_at_PNNL_HPC_Cascade(args_dict['repo_location'], command)
   #       ran_mrc2smv = True
   if (ran_mrc2smv == False):
     print_this = "\t(note) mrc2smv of 2.4 GB mrc took ~30 seconds.\n"
@@ -356,10 +363,10 @@ def run_mrc2smv(args_dict, mrc_w_path, output_folder_name):
   util.flog(write_this, args_dict['logfile_name_w_abs_path'])
 
   return True
-######### end of def run_mrc2smv(args_dict, mrc_w_path, output_folder_name)
+######### end of def run_mrc2smv_by_tvips(args_dict, mrc_w_path, output_folder_name)
 
 
-def run_mrc2smv_at_PNNL_HPC_Cascade(repo_location, command):
+def run_mrc2smv_by_tvips_at_PNNL_HPC_Cascade(repo_location, command):
   
   #open_this_template_file = str(repo_location) + "/templates/slurm_template_GPU"
   # 07/30/2020, pncc is very busy, can't run
@@ -423,4 +430,29 @@ def run_mrc2smv_at_PNNL_HPC_Cascade(repo_location, command):
       
       if (img_file_number == img_file_number_after_waiting):
         break
-######### end of def run_mrc2smv_at_PNNL_HPC_Cascade(logfile_name_w_abs_path, repo_location, mrc_w_path, output_folder_name)
+######### end of def run_mrc2smv_by_tvips_at_PNNL_HPC_Cascade(logfile_name_w_abs_path, repo_location, mrc_w_path, output_folder_name)
+
+
+def run_mrc2smv_by_wcen(args_dict, mrc_w_path, output_folder_name):  
+  process = "mrc2smv by wcen with " + str(mrc_w_path)
+  util.show_header(process)
+  start_time = time.time()
+
+  mrc = util.load_density_file(mrc_w_path)
+
+  print (f"mrc_w_path:{mrc_w_path}")
+
+  print (f"mrc.data.shape:{mrc.data.shape}")
+  # each mrc -> (2048, 2048)
+
+  mrc_base_file_name = os.path.basename(mrc_w_path)
+
+  out_tiff_path = mrc_base_file_name[:-4] + ".tiff"
+
+  if os.path.isdir("tiff") == False:
+    os.mkdir("tiff")
+  out_tiff_path = os.path.join("tiff", out_tiff_path)
+
+  tifffile.imsave( out_tiff_path, mrc.data )
+#end of def run_mrc2smv_by_wcen(args_dict, mrc_w_path, output_folder_name):  
+
