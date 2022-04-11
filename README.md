@@ -1,7 +1,13 @@
 # AutoMicroED
-
+ 
 ## This github repo is for AutoMicroED paper
    - [link](https://www.biorxiv.org/content/10.1101/2021.12.13.472146v2)
+
+## Confirmed operating system
+   - MacOS version 10.14.6 or newer
+   - CentOS Linux 7 or newer
+   - WindowsOS may not work since there is no guarantee that third party software will work for WindowsOS (e.g. tvips-tools-jiffies, xds)
+   - Supports CPU only (e.g. no GPU)
 
 ## How to install
    - [link](./reference/install.md)
@@ -15,19 +21,14 @@
       - python (git_repo)/run_all.py mrc.list arg.list
          - See [How to prepare to run](./reference/how_to_prepare_to_run.md) on generating mrc.list and arg.txt
 
-## Confirmed operating system
-   - MacOS version 10.14.6 or newer
-   - CentOS Linux 7 or newer
-   - WindowsOS may not work since there is no guarantee that third party software will work for WindowsOS (e.g. tvips-tools-jiffies, xds)
-   - Supports CPU only (e.g. no GPU)
-
-## Tutorial
-   - [link](./reference/tutorial.md)
+## Overview
+   - [link](./reference/protocol.md)
 
 ## Tip/Troubleshooting
    - [link](./reference/tip.md)
 
-## Overview of AutoMicroED
-   - [link](./reference/protocol.md)
+## Tutorial
+   - [link](./reference/tutorial.md)
+
 
 Post inquiries/suggestions into https://github.com/pnnl/AutoMicroED/issues

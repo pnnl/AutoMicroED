@@ -17,8 +17,7 @@
    - Consult with reference/microED_notes.pdf file for abbreviations and additional options.
    - For catalase, carbamazepine microED data generation (perhaps for other targets as well), rotation rate of the stage is better to be <= 0.5 degree/second for enough sampling. 1 degree/second is too sparse.
    - imod's header shows stack number
-      - (For example, in PNNL_krios_GPU server) source /home/kimd999/.bashrc_IMOD
-      - then 'header (merged mrcs)'
+      - Usage: 'header (mrcs filename)'
       - For example, if 'header merged.mrcs' shows
          - Number of columns, rows, sections .....    4096    4096     147
       - this mrcs has 147 images (e.g. I merged 71 and 76 images)
@@ -26,8 +25,8 @@
 ## Tip for File System Path
    -  run AutoMicroED on path that has no space ( ) in it.
       - For example, do not run AutoMicroED at "Desktop" or "OneDrive sync" since often these have () in PATH.
-   - Also, do not run AutoMicroED at a folder has too long path name.
+   - Also, do not run AutoMicroED at a folder has too long path name (most operating systems cannot handle properly).
 
 
-## Troubleshooting
+## Troubleshooting of xds
    - [link](./troubleshooting.md)

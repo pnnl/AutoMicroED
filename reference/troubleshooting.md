@@ -1,8 +1,5 @@
-## Troubleshooting
-   - When xds executable is broken with a message of "forrtl: No such file or directory", re-downloading the executable solves it.
+## Troubleshooting of xds
    - When xds (xds_par) resulted in 
-      - "!!! ERROR !!! CANNOT READ XPARM.XDS" without an obvious reason
-         -  re-trying after few days works again.
       - AUTOMATIC DETERMINATION OF SPOT SIZE PARAMETERS HAS FAILED.
          - You may want to exclude empty frames from processing.
          - If your frames show few reflections, you could increase
@@ -16,3 +13,12 @@
       - CANNOT OPEN OR READ FILE bin1_01.tmp
          - Presumably, the independent jobs supposed to have been started in the INTEGRATE step have not run properly.
          - This could be due to incomplete installation of XDS where some of the executables of the package are not included in the search path.
+      - "!!! ERROR !!! CANNOT READ XPARM.XDS" without an obvious reason
+         -  re-trying after few days works again.
+      - "forrtl: No such file or directory"
+         -  re-downloading the executable solved the issue.
+         -  [Refer](https://github.com/pnnl/AutoMicroED/blob/master/reference/third_party_sw.md)
+      - "Sorry, license expired on 31-Mar-2022"
+         -  re-downloading the executable solved the issue.
+         -  [Refer](https://github.com/pnnl/AutoMicroED/blob/master/reference/third_party_sw.md)
+      

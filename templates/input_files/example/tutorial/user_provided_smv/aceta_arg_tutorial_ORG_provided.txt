@@ -1,3 +1,5 @@
+outdir smv
+
 ########## <begin> Basic information of input mrc
 columns 2048
 sections 120
@@ -5,6 +7,8 @@ sections 120
 
 
 ######## <begin> mrc2smv
+
+Bypass_movie_inspection False
 
 d_not_calibrated 165749merged 430
 d_not_calibrated 170629merged 430
@@ -21,21 +25,18 @@ E 1
 
 P 0.028
 
-Bypass_image_inspection False
+Bypass_image_inspection True
 ######## <end> mrc2smv 
 
 
 ######## <begin> xds
 Bypass_spot2pdb_inspection False
 
-multi_core_xds False
+mutl_core_xds False
 
 least_completeness_overall 95
-
 NX 2048
-
 NY 2048
-
 ORGX 1058
 ORGY 1025
 
@@ -53,7 +54,7 @@ TEST_RESOLUTION_RANGE 4 0.5
 ######## <begin> analysis after xds
 generate_adx_folder /opt/apps/AutoMicroED/
 
-Bypass_generate_adx_inspection False
+Bypass_generate_adx_inspection True
 ######## <end> analysis after xds
 
 

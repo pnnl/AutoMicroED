@@ -20,7 +20,7 @@
 
 
 ########## <begin> Basic information of input mrc
-# If user a provides mrc file and imod path, AutoMicroED will populate
+# If user a provides mrc file, AutoMicroED will populate
 these 4 features automatically (therefore, no need to specify them in
 # this args_file).
 columns 2048

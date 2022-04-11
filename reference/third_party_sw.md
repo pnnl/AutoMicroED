@@ -12,8 +12,6 @@
    - Fiji
      - Download from https://imagej.net/Fiji/Downloads
      - Works in WindowsOS, macOS and linux
-   - matplotlib
-     - AutoMicroED shows message how to install matplotlib if there is none.
    - tvips-tools-jiffies
      - This has mrc2smv
      - Download from https://cryoem.ucla.edu/downloads/snapshots
