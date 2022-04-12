@@ -1,15 +1,13 @@
 ## Tutorial
    - mkdir tutorial
-      - (Doo Nam recommends that this working folder is not under a new folder that is created by git clone to maintain git repository easily)
+      - (We recommend that this working folder is not under a new folder that is created by git clone to maintain git repository easily)
    - cd tutorial
       - mkdir mrc
-   - (prepare/download mrc)
-      - (AutoMicroED team will upload tutorial mrcs to DOI website soon)
-   - ls $PWD/*.mrcs > mrc_file.list
-      - (refer an example) (AutoMicroED git repository)/templates/mrc_is_stack/tutorial/Acetaminophen/aceta_mrc_tutorial.list
-   - cp (AutoMicroED git repository)/templates/mrc_is_stack/tutorial/Acetaminophen/aceta_arg_tutorial.txt .
-      - (Please update (git repository) according to user's git clone)
-         - (For example, if a user did git clone at /home/powe385, then (AutoMicroED git repository) is /home/powe385/AutoMicroED)
+   - (Download mrc)
+      - [from here](https://release.my.emsl.pnnl.gov/released_data/2299309)
+   - ls $PWD/*.mrcs > aceta_mrc_tutorial.list
+   - cp (AutoMicroED git repository)/templates/input_files/example/tutorial/user_provided_mrcs/aceta_mrc_tutorial.list .
+      - (For example, if a user did git clone at /home/powe385, then (AutoMicroED git repository) is /home/powe385/AutoMicroED)
    - python (AutoMicroED git repository)/run_all.py aceta_mrc_tutorial.list aceta_arg_tutorial.txt
       - (If a user made an alias then simply run 
          - "(alias name) aceta_mrc_tutorial.list aceta_arg_tutorial.txt"
