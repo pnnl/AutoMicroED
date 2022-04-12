@@ -6,7 +6,7 @@
    - (Download mrc)
       - [from here](https://release.my.emsl.pnnl.gov/released_data/2299309)
    - ls $PWD/*.mrcs > aceta_mrc_tutorial.list
-   - cp (AutoMicroED git repository)/templates/input_files/example/tutorial/user_provided_mrcs/aceta_mrc_tutorial.list .
+   - cp (AutoMicroED git repository)/templates/input_files/example/user_provided_mrcs/aceta_mrc_tutorial.list .
       - (For example, if a user did git clone at /home/powe385, then (AutoMicroED git repository) is /home/powe385/AutoMicroED)
    - python (AutoMicroED git repository)/run_all.py aceta_mrc_tutorial.list aceta_arg_tutorial.txt
       - (If a user made an alias then simply run 

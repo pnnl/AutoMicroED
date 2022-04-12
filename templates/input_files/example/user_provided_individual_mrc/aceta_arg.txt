@@ -1,31 +1,23 @@
-outdir 1_core
+######## <begin> Assign pathways of binaries (executables)
+mrc2smv_folder /opt/apps/tvips-tools-jiffies-20190827-linux64
+generate_adx_folder /opt/apps/AutoMicroED/
+ccp4_folder /opt/apps/ccp4-7.1/bin
+spot2pdb_folder /opt/apps/AutoMicroED/
+######## <end> Assign pathways of binaries (executables)
 
-######## <begin> Assign a pathway of IMOD binaries (executables)
-IMOD_folder /home/scicons/cascade/apps/imod/4.10.16/IMOD/bin/
-######## <end> Assign a pathway of IMOD binaries (executables)
 
+outdir single_mrc 
 
 ######## <begin> mrc2smv
-
-mrc2smv_folder /opt/apps/tvips-tools-jiffies-20190827-linux64
-
 Bypass_movie_inspection True
-
-d_not_calibrated 165749merged 430
-d_not_calibrated 170629merged 430
-
+d_not_calibrated 2021-06-15-165749_???? 430
+d_not_calibrated 2021-06-15-170629_???? 430
 d_calibration_coef 1.8 -14.53
-
 B 2
-
 r 0.6
-
 voltage_of_the_microscope 300
-
 E 1
-
 P 0.028
-
 Bypass_image_inspection True
 ######## <end> mrc2smv 
 
@@ -41,23 +33,16 @@ ROTATION_AXIS -1 0 0
 
 SPACE_GROUP_NUMBER 0
 
-STARTING_ANGLE 165749merged -65
-STARTING_ANGLE 170629merged -65
+STARTING_ANGLE 2021-06-15-165749_???? -65
+STARTING_ANGLE 2021-06-15-170629_???? -65
 
 TEST_RESOLUTION_RANGE 4 0.5
 ######## <end> xds
 
 
 ######## <begin> analysis after xds
-generate_adx_folder /opt/apps/AutoMicroED/
-
 Bypass_generate_adx_inspection True
 ######## <end> analysis after xds
-
-
-######## <begin> Assign pathways of binaries (executables)
-ccp4_folder /opt/apps/ccp4-7.1/bin
-######## <end> Assign pathways of binaries (executables)
 
 
 ######## <begin> phasing target
@@ -74,7 +59,5 @@ Generate_LATT_SYMM_from_website False
 
 
 ######## <begin> Prepare final report
-spot2pdb_folder /opt/apps/AutoMicroED/
-
 spot2pdb_RESOLUTION_RANGE 0.5 4
 ######## <end> Prepare final report
