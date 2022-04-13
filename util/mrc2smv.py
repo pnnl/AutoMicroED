@@ -1,5 +1,6 @@
 from math import isclose
-import argparse, codecs, glob, os, platform, random, shutil, signal, subprocess, sys, tifffile, time
+import argparse, codecs, glob, os, platform, random, shutil, signal, subprocess, sys, time
+#import tifffile # needed for wcen only
 from PIL import Image
 import protein, shelx, xds, xscale
 import util
@@ -432,7 +433,7 @@ def run_mrc2smv_by_tvips_at_PNNL_HPC_Cascade(repo_location, command):
         break
 ######### end of def run_mrc2smv_by_tvips_at_PNNL_HPC_Cascade(logfile_name_w_abs_path, repo_location, mrc_w_path, output_folder_name)
 
-
+'''
 def run_mrc2smv_by_wcen(args_dict, mrc_w_path, output_folder_name):  
   process = "mrc2smv by wcen with " + str(mrc_w_path)
   util.show_header(process)
@@ -455,4 +456,4 @@ def run_mrc2smv_by_wcen(args_dict, mrc_w_path, output_folder_name):
 
   tifffile.imsave( out_tiff_path, mrc.data )
 #end of def run_mrc2smv_by_wcen(args_dict, mrc_w_path, output_folder_name):  
-
+'''
