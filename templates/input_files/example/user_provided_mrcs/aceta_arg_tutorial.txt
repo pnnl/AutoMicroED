@@ -3,7 +3,8 @@ mrc2smv_folder /opt/apps/tvips-tools-jiffies-20190827-linux64
 generate_adx_folder /opt/apps/AutoMicroED/
 ccp4_folder /opt/apps/ccp4-7.1/bin
 spot2pdb_folder /opt/apps/AutoMicroED/
-######## <end> Assign pathways of binaries (executables)
+
+# These pathways of binaries do not need to be specified in this user's arg_file if a user specifies them in PATH######## <end> Assign pathways of binaries (executables)
 
 outdir 1_core
 

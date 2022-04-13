@@ -13,13 +13,10 @@
    - [link](./reference/install.md)
 
 ## How to run
-   - (basic)
-      - python (git_repo)/run_all.py
-         - (For example) python ~/script/python/cryoEM/AutoMicroED/run_all.py
-         - shows what file is needed
-   - (advanced, recommended)
-      - python (git_repo)/run_all.py mrc.list arg.list
-         - See [How to prepare to run](./reference/how_to_prepare_to_run.md) on generating mrc.list and arg.txt
+   - python (git_repo)/run_all.py
+      - (For example) python ~/script/python/cryoEM/AutoMicroED/run_all.py
+      - shows what input files are needed   
+   - See [How to prepare to run](./reference/how_to_prepare_to_run.md) on generating image_list.txt and args.txt
 
 ## Overview
    - [link](./reference/protocol.md)

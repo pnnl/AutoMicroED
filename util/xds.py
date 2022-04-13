@@ -85,10 +85,31 @@ def estimate_ORGX_ORGY_with_ImageMagick(args_dict, ORGX_ORGY, input_smv_file):
   lower_limit = half*0.925
   upper_limit = half*1.075
 
-  print (f"upper_limit:{upper_limit}")
-
   output_png_file = input_smv_file[:-4] + ".png"
-  cmd = "convert -depth 16 -type Grayscale -colorspace GRAY -endian LSB -size 2048x2048+512 GRAY:" + str(input_smv_file) + " -negate -normalize " + str(output_png_file)
+
+  try:
+    path = subprocess.check_output(["which", "convert"]).decode('UTF-8')
+    print_this = "\tPath of convert:" + str(path)
+    util.flog(print_this, args_dict['logfile_name_w_abs_path'])
+    cmd = "convert "
+  except:
+    print_this = "\nconvert is not located."
+    util.flog(print_this, args_dict['logfile_name_w_abs_path'])
+    util.flog_wo_print(print_this, args_dict['summary_logfile_name_w_abs_path'])
+
+    if ('convert_folder' in args_dict.keys()):
+      cmd = str(os.path.join(str(args_dict['convert_folder']), 'convert'))
+    else:
+      print_this = print_this + "\nDo one of below 3 solutions."
+      print_this = print_this + "\n\tsolution #1) Add imagemagick's convert into user's PATH."
+      print_this = print_this + "\n\tsolution #2) Refer https://github.com/pnnl/AutoMicroED/blob/master/reference/install_convert.md"
+      print_this = print_this + "\n\tsolution #3) Specify convert_folder in user_args_file"
+
+      util.flog(print_this, args_dict['logfile_name_w_abs_path'])
+      util.flog_wo_print(print_this, args_dict['summary_logfile_name_w_abs_path'])
+      exit(1)
+
+  cmd = cmd + " -depth 16 -type Grayscale -colorspace GRAY -endian LSB -size 2048x2048+512 GRAY:" + str(input_smv_file) + " -negate -normalize " + str(output_png_file)
   util.flog(cmd, args_dict['logfile_name_w_abs_path'])
   os.system(cmd)
 

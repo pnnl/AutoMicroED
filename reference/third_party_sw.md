@@ -30,3 +30,4 @@
      - Download from https://www.phenix-online.org/download/
      - Then, refer https://www.phenix-online.org/documentation/install-setup-run.html
      - AutomicroED needs to use cctbx code of PHENIX to automatically retrieve LATT and SYMM, phase intensities and refine protein model.
+   - [ImageMagick](install_convert.md)

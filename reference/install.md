@@ -19,10 +19,12 @@
       - (Some software may not be installed in WindowsOS.)
       - Designate PATH for tvips, XDS and ccp4
          - For example, for bash user
-            - In macOS
+            - add
                - export PATH="/Users/kimd999/research/microED/dn_try/tvips-tools-jiffies-20191209-macos64/":$PATH
                - export PATH="/Users/kimd999/bin/XDS-OSX_64/":$PATH
                - export PATH="/Applications/ccp4-7.0/bin/":$PATH
+            - into ~/.bashrc
+      - Alternatively, AutoMicroED user can specify locations of binary at args_file. Refer templates/input_files for examples and explanations.
 
 
 ### Git troubleshooting

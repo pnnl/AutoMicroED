@@ -146,15 +146,21 @@ def args_file_parse(args_dict):
     
     elif (splited_line[0] == "COMPOSITION_PROTEIN_SEQUENCE_NUM"):
       args_dict['COMPOSITION_PROTEIN_SEQUENCE_NUM'] = splited_line[1]
+    
+    elif (splited_line[0] == "convert_folder"):
+      args_dict['convert_folder'] = splited_line[1]
+
     elif (splited_line[0] == "d_calibrated"): # true DETECTOR_DISTANCE
       if (len(splited_line) < 3):
         args_dict['d_calibrated'] = splited_line[1]
       else:
         combi = ('d_calibrated', str(splited_line[1]))
         args_dict[combi] = splited_line[2]
+    
     elif (splited_line[0] == "d_calibration_coef"):
       args_dict['d_calibration_1st_coef'] = splited_line[1]
       args_dict['d_calibration_2nd_coef'] = splited_line[2]
+    
     elif (splited_line[0] == "d_not_calibrated"): # DETECTOR_DISTANCE_from_Krios
       if (len(splited_line) == 3):
         combi = ('d_not_calibrated', str(splited_line[1]))
