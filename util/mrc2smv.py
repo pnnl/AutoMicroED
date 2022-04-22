@@ -27,10 +27,10 @@ def prepare_d_calibrated(args_dict, output_folder_name):
 
   mrc_wo_path_wo_ext_w_4_questions_marks = mrc_wo_path_wo_ext + "_????"
 
-  print (f"mrc_wo_path_wo_ext:{mrc_wo_path_wo_ext}")
+  #print (f"mrc_wo_path_wo_ext:{mrc_wo_path_wo_ext}")
   # tutorial -> 165749merged
 
-  print (f"mrc_wo_path_wo_ext_w_4_questions_marks:{mrc_wo_path_wo_ext_w_4_questions_marks}")
+  #print (f"mrc_wo_path_wo_ext_w_4_questions_marks:{mrc_wo_path_wo_ext_w_4_questions_marks}")
   # tutorial -> 165749m__????
 
   ############### <begin> distance

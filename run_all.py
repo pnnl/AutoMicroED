@@ -281,8 +281,8 @@ if (__name__ == "__main__") :
       mrc_file_number = 0
       for mrc_file in mrc_file_list_opened:
         mrc_w_path = mrc_file.rstrip()
-        write_this = "mrc_file:" + str(mrc_file)
-        flog_wo_print(write_this, args_dict['logfile_name_w_abs_path'])
+        #write_this = "mrc_file:" + str(mrc_file)
+        #flog_wo_print(write_this, args_dict['logfile_name_w_abs_path'])
         
         if (mrc_file == "\n") or (mrc_file == ""):
           continue
@@ -432,7 +432,6 @@ if (__name__ == "__main__") :
       more_crystal_needed = None
       for mrc_file in mrc_file_or_smv_folder_opened:
         mrc_w_path = mrc_file.rstrip()
-        print ("mrc_file:" + str(mrc_file))
         
         if (mrc_file == "\n") or (mrc_file == ""):
           continue
@@ -561,11 +560,9 @@ if (__name__ == "__main__") :
       if (each_smv_folder[len(each_smv_folder)-1]) == "/":
         each_smv_folder = each_smv_folder[:len(each_smv_folder)-1]
 
-
       intermediate_output_folder_name = each_smv_folder.split('/')[-2]
       #print (fintermediate_output_folder_name:{intermediate_output_folder_name}")
       # smv only -> 165749merged
-
       
       os.mkdir(intermediate_output_folder_name)
       os.chdir(intermediate_output_folder_name)

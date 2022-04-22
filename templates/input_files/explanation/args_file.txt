@@ -19,6 +19,8 @@ ccp4_folder  <A user needs to update this path>
 
 spot2pdb_folder <A user needs to update this path>
 # For example, /opt/apps/AutoMicroED
+
+# These pathways of binaries do not need to be specified in this user's arg_file if a user specifies them in PATH
 ######## <end> Assign pathways of binaries (executables)
 
 

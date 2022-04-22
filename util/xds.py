@@ -3,6 +3,7 @@ import codecs, glob, os, random, shutil, subprocess, sys, time
 import matplotlib.image as mpimg
 import mrcfile
 import numpy as np
+import pandas as pd
 import util
 
 home_dir_path = os.path.expanduser("~")
@@ -76,21 +77,61 @@ def add_DELPHI_10(logfile_name_w_abs_path):
 ############# end of def add_DELPHI_10()
 
 
-def estimate_ORGX_ORGY_with_ImageMagick(args_dict, ORGX_ORGY, input_smv_file):
-  print_this = "\tA smv file that will be used to estimate ORGX_ORGY:" + str(input_smv_file)
-  util.flog(print_this, args_dict['logfile_name_w_abs_path'])
+def estimate_ORGXY_now(args_dict, ORGX_ORGY, pixel_in_2D):
+  half = int(args_dict['NX'])/2   # 1024.0
 
-  half = int(args_dict['NX'])/2
-  
-  lower_limit = half*0.925
-  upper_limit = half*1.075
+  lower_limit = half*0.925 # 947.2
+  upper_limit = half*1.075 # 1100.8
 
+  df = pd.DataFrame(columns=['x', 'y', 'pixel'])
+  df_mrc_data = pd.DataFrame(pixel_in_2D)
+  for x in range(len(pixel_in_2D)):
+    if (x < lower_limit) or (x > upper_limit):
+      continue
+    for y in range(len(pixel_in_2D[0])): 
+      if (y < lower_limit) or (y > upper_limit):
+        continue
+      
+      pixel = return_pixel_including_neighbors(df_mrc_data, x, y, 40)
+      '''
+      estimation with 25 neighbor (df): 1057.1/1019 (82=38+44) took 36 sec
+      estimation with 40 neighbor (df): 1051/1019 (=+44) took 37 sec
+      estimation with 50 neighbor (df): 1049.1/1023.0 (78=30+48) took 38 sec
+      estimation with 100 neighbor (df): 1061/1060.0 (134=49+85) took 42 sec
+      estimation with 500 neighbor (df): 987.25/1061 took 1.7 min'''
+
+      df_to_add = pd.DataFrame({"x":[x],
+                                "y":[y],
+                                "pixel":[pixel]})
+      df = df.append(df_to_add, ignore_index=True)
+
+  df_sorted = df.sort_values(by=['pixel'])
+  df_top_candidate = df_sorted[:20]
+  ORGX = df_top_candidate['x'].mean()
+  ORGY = df_top_candidate['y'].mean()
+
+  ORGX = round(ORGX, 1)
+  ORGX = (ORGX + half)/2
+  print (f"ORGX:{ORGX}") # 1050
+
+  ORGY = (ORGY + half)/2
+  ORGY = round(ORGY, 1)
+  print (f"ORGY:{ORGY}") # 1024
+  if (ORGX_ORGY == "ORGX"):
+    print (f"ORGX:{ORGX}")
+    return ORGX
+  else:
+    print (f"ORGY:{ORGY}")
+    return ORGY
+############ end of def estimate_ORGXY_now(ORGX_ORGY, mrc_w_path, logfile_name_w_abs_path):
+
+
+def estimate_ORGXY_for_smv(args_dict, ORGXY, input_smv_file):
   output_png_file = input_smv_file[:-4] + ".png"
-
   try:
     path = subprocess.check_output(["which", "convert"]).decode('UTF-8')
-    print_this = "\tPath of convert:" + str(path)
-    util.flog(print_this, args_dict['logfile_name_w_abs_path'])
+    #print_this = "\tPath of convert:" + str(path)
+    #util.flog(print_this, args_dict['logfile_name_w_abs_path'])
     cmd = "convert "
   except:
     print_this = "\nconvert is not located."
@@ -113,185 +154,12 @@ def estimate_ORGX_ORGY_with_ImageMagick(args_dict, ORGX_ORGY, input_smv_file):
   util.flog(cmd, args_dict['logfile_name_w_abs_path'])
   os.system(cmd)
 
-  ORGX_ORGY = estimate_ORGX_ORGY_by_img_avg(args_dict, ORGX_ORGY, output_png_file)
-  return ORGX_ORGY
-############ end of def estimate_ORGX_ORGY_with_ImageMagick(ORGX_ORGY, mrc_w_path, logfile_name_w_abs_path):
-
-
-def estimate_ORGX_ORGY_by_img_avg(args_dict, ORGX_ORGY, image_file_name):
-  half = int(args_dict['NX'])/2
-  
-  lower_limit = half*0.925
-  upper_limit = half*1.075
-  
-  img = mpimg.imread(image_file_name)
-  all_pixels = []
-  for x in range(len(img)):
-    if (x < lower_limit) or (x > upper_limit):
-      continue
-    for y in range(len(img[0])):
-      if (y < lower_limit) or (y > upper_limit):
-        continue
-      pixel = img[x][y]
-      all_pixels.append(pixel)
-  avg = np.mean(all_pixels)
-  
-  x_for_above_avg_pixel_array = []
-  y_for_above_avg_pixel_array = []
-  for x in range(len(img)):
-    if (x < lower_limit) or (x > upper_limit):
-      continue
-    for y in range(len(img[0])):
-      if (y < lower_limit) or (y > upper_limit):
-        continue
-      pixel = img[x][y]
-      if (pixel > avg):
-        x_for_above_avg_pixel_array.append(x)
-        y_for_above_avg_pixel_array.append(y)
-  
-  if (ORGX_ORGY == "ORGX"):
-    ORGX= int(np.mean(x_for_above_avg_pixel_array))
-    return ORGX
-  else:
-    ORGY= int(np.mean(y_for_above_avg_pixel_array))
-    return ORGY
-######## end of def estimate_ORGX_ORGY_by_img_avg(image_file_name):
-
-
-def estimate_ORGX_ORGY_with_mrc_lib(args_dict, ORGX_ORGY, mrc_w_path):
-  #mrc_w_path -> /gpustorage/MicroEDProc/SMP/combogrid_061521/2021-06-15-165749/165749merged.mrcs
-
-  print_this = "\tA mrc file that will be used to estimate ORGX_ORGY:" + str(mrc_w_path)
-  util.flog(print_this, args_dict['logfile_name_w_abs_path'])
-
-  mrc = util.load_density_file(mrc_w_path)
-
-  #print (f"mrc:{mrc}")
-  #MrcMemmap('/gpustorage/MicroEDProc/SMP/combogrid_061521/2021-06-15-165749/165749merged.mrcs', mode='r')
-
-  #print (f"mrc.data:{mrc.data}")
-  # mrcs ->
-  '''[[[-36. -36. -36. ... -39.   7. -19.]
-  [  4.   4.   4. ... -11.  -4. -15.]
-  [ 43.  43.  43. ... -54. -31. -37.]...'''
-  
-  # mrc ->
-  '''[[-36. -36. -36. ... -39.   7. -19.]
- [  4.   4.   4. ... -11.  -4. -15.]
- [ 43.  43.  43. ... -54. -31. -37.]...'''
-
-  #print (f"mrc.data.shape:{mrc.data.shape}")
-  #mrcs -> (120, 2048, 2048)
-  #mrc  -> (2048, 2048)
-
-  #print (f"len(mrc.data.shape):{len(mrc.data.shape)}")
-  #mrc  -> 2
-
-  use_this_mrc = int(mrc.data.shape[0]/2)
-  
-  # print (f"mrc.data[use_this_mrc]:{mrc.data[use_this_mrc]}")
-  # print (f"type(mrc.data[use_this_mrc]):{type(mrc.data[use_this_mrc])}")
-
-  #print (f"np.mean(mrc.data[use_this_mrc]):{np.mean(mrc.data[use_this_mrc])}")
-  #22.31913948059082
-
-  half = int(args_dict['NX'])/2
-  
-  lower_limit = half*0.925
-  upper_limit = half*1.075
-  # print (f"half:{half}")
-  # # mrc -> 1024.0
-
-  # print (f"lower_limit:{lower_limit}")
-  #     #947.2
-  # print (f"upper_limit:{upper_limit}")
-      #1100.8
-
-  
-  avg = np.mean(mrc.data[use_this_mrc])
-  #print (f"avg:{avg}")
-  #mrc -> 95.9208984375
-
-
-  img = mrc.data[use_this_mrc]
-
-  #print (f"type(img):{type(img)}")
-  #mrcs-> <class 'numpy.memmap'>
-  #mrc ->  class 'numpy.memmap'>  
-
-
-  #print (f"img.shape:{img.shape}")
-  #mrcs -> (2048, 2048)
-  #mrc -> (2048,)
-
-  #print (f"len(img):{len(img)}")
-  #mrcs -> 2048
-  #mrc -> 2048
-
-  #print (f"type(img[0][0]):{type(img[0][0])}")
-  #mrcs -> <class 'numpy.float32'>
-  # mrc -> IndexError: invalid index to scalar variable.
-
-
-  #print (f"len(img[0]):{len(img[0])}")
-  # mrcs ->2048
-  # mrc -> TypeError: object of type 'numpy.float32' has no len()
-
-
-  x_for_above_avg_pixel_array = []
-  y_for_above_avg_pixel_array = []
-
-  if len(mrc.data.shape) == 3:
-    #print (f"type(img[0][0]):{type(img[0][0])}")
-    #mrcs -> <class 'numpy.float32'>
-    for x in range(len(img)):
-      if (x < lower_limit) or (x > upper_limit):
-        continue
-      
-      for y in range(len(img[0])):
-        if (y < lower_limit) or (y > upper_limit):
-          continue
-        pixel = img[x][y]
-        if (pixel > avg):
-          x_for_above_avg_pixel_array.append(x)
-          y_for_above_avg_pixel_array.append(y)
-    #print (f"x_for_above_avg_pixel_array:{x_for_above_avg_pixel_array}")
-    if (ORGX_ORGY == "ORGX"):
-      ORGX= int(np.mean(x_for_above_avg_pixel_array))
-      print (f"ORGX:{ORGX}")
-      return ORGX
-    else:
-      ORGY= int(np.mean(y_for_above_avg_pixel_array))
-      print (f"ORGY:{ORGY}")
-      return ORGY
-  else:
-    for x in range(len(img)):
-      
-      if (x < lower_limit) or (x > upper_limit):
-        continue
-        
-        #print (f"type(img[x]):{type(img[x])}")
-        #<class 'numpy.float32'>
-
-      pixel = img[x]
-      if (pixel > avg):
-        x_for_above_avg_pixel_array.append(x)
-
-    if (ORGX_ORGY == "ORGX"):
-      ORGX= int(np.mean(x_for_above_avg_pixel_array))
-      print (f"ORGX:{ORGX}")
-      return ORGX
-    else:
-      ORGY= int(np.mean(x_for_above_avg_pixel_array))
-      print (f"ORGY:{ORGY}")
-      return ORGY
-
-############ end of def estimate_ORGX_ORGY_with_mrc_lib(ORGX_ORGY, mrc_w_path, logfile_name_w_abs_path):
+  img = mpimg.imread(output_png_file)
+  return estimate_ORGXY_now(args_dict, str(ORGXY), img)
+#### end of def estimate_ORGXY_for_smv(args_dict, str(ORGXY), input_smv_file)    
 
 
 def get_BEAM_DIVERGENCE_REFLECTING_RANGE(args_dict):
-  write_this = "\ncurrent working directory: " + str(os.getcwd()) + "\n"
-  util.flog(write_this, args_dict['logfile_name_w_abs_path'])
   BEAM_DIVERGENCE = BEAM_DIVERGENCE_ESD = REFLECTING_RANGE = REFLECTING_RANGE_ESD = None
   if (os.path.isfile("INTEGRATE.LP") == True):
     BEAM_DIVERGENCE, BEAM_DIVERGENCE_ESD, REFLECTING_RANGE, REFLECTING_RANGE_ESD \
@@ -323,10 +191,6 @@ def get_BEAM_DIVERGENCE_REFLECTING_RANGE(args_dict):
 
 
 def get_BEAM_DIVERGENCE_REFLECTING_RANGE_now(args_dict, use_this_file_get_BEAM_DIVERGENCE_REFLECTING_RANGE):
-  #write_this = "current working directory: " + str(os.getcwd()) + "\n"
-  #print (f"write_this:{write_this}")
-  #util.flog(write_this, args_dict['logfile_name_w_abs_path'])
-  
   BEAM_DIVERGENCE = BEAM_DIVERGENCE_ESD = REFLECTING_RANGE = REFLECTING_RANGE_ESD = None
   f_in  = codecs.open(use_this_file_get_BEAM_DIVERGENCE_REFLECTING_RANGE, 'r')
   for line in f_in:
@@ -449,6 +313,14 @@ def remove_DELPHI_10(args_dict):
 ############# end of def remove_DELPHI_10()
 
 
+def return_pixel_including_neighbors(df_mrc_data, x, y, pad):
+  summed_pixel = df_mrc_data.iloc[x-pad:x+pad, y-pad:y+pad].sum()
+  pixel = np.mean(summed_pixel)
+  pixel = round(pixel, 2)
+  return pixel
+# end of def return_pixel_including_neighbors(img, x, y):
+
+
 def run_all_xds(args_dict, mrc_wo_path, output_folder_name, xds_kind):
   if (os.path.isfile("CORRECT.LP") == True):
     return True
@@ -485,12 +357,12 @@ def run_xds(args_dict, mrc_w_path, output_folder_name):
   if (args_dict['input_list_has_mrc'] == True):
     mrc_wo_path = os.path.basename(mrc_w_path)
   else:
-    print (f"mrc_w_path:{mrc_w_path}")
+    #print (f"mrc_w_path:{mrc_w_path}")
     mrc_wo_path = mrc_w_path.split('/')[-2]
-    print (f"mrc_wo_path:{mrc_wo_path}")
+    #print (f"mrc_wo_path:{mrc_wo_path}")
 
   mrc_wo_path_wo_ext = os.path.splitext(mrc_wo_path)[0]
-  print (f"mrc_wo_path_wo_ext:{mrc_wo_path_wo_ext}")
+  #print (f"mrc_wo_path_wo_ext:{mrc_wo_path_wo_ext}")
   # when individual mrc is provided -> 2021-06-15-165749_0004
 
   if (args_dict['input_list_has_mrc'] == True):
@@ -512,26 +384,36 @@ def run_xds(args_dict, mrc_w_path, output_folder_name):
   ORG_list = ["ORGX", "ORGY"]
   for ORGXY in ORG_list:
     if (args_dict['input_list_has_mrc'] == True):
-      if (int(args_dict['sections']) == 1):
+
+      if (int(args_dict['sections']) == 1): # individual_mrc
         combi = (ORGXY, str(mrc_wo_path_wo_ext_w_4_question_marks)) # mrc_wo_path has .mrc/.mrcs extension
-        print (f"combi:{combi}") #('ORGX', '2021-06-15-165749_????')
-      else:
+        #print (f"combi:{combi}") #('ORGX', '2021-06-15-165749_????')
+      else: # mrcs, args_dict['sections'] = 539
         combi = (ORGXY, str(mrc_wo_path_wo_ext)) # mrc_wo_path has .mrc/.mrcs extension
-        print (f"combi:{combi}") #('ORGX', '165749merged')
+        #print (f"combi:{combi}") #('ORGX', '165749merged')
       
       if (combi not in args_dict):
         print_this = "(note)  AutoMicroED doesn't see " + str(ORGXY) + " in a user-provided args_file."
-        print_this = print_this + "\n\t\t\t\tTherefore, it will locate " + str(ORGXY) + " automatically with help from mrclibrary."
+        print_this = print_this + "\n\t\t\t\tTherefore, it will estimate " + str(ORGXY) + " by mrclibrary."
         util.flog(print_this, args_dict['logfile_name_w_abs_path'])
         
         ORGXY_start_time = time.time()
-        args_dict[combi] = estimate_ORGX_ORGY_with_mrc_lib(args_dict, str(ORGXY), mrc_w_path)
+        if (int(args_dict['sections']) > 1):
+          print_this = "\tA mrcs file that will be used to estimate " + str(ORGXY) + ": " + str(mrc_w_path)
+          util.flog(print_this, args_dict['logfile_name_w_abs_path'])
+          mrcs = util.load_density_file(mrc_w_path)
+          use_this_mrcs = int(mrcs.data.shape[0]/2)
+          args_dict[combi] = estimate_ORGXY_now(args_dict, str(ORGXY), mrcs.data[use_this_mrcs])
+        else:
+          print_this = "\tA mrc file that will be used to estimate " + str(ORGXY) + ": " + str(mrc_w_path)
+          util.flog(print_this, args_dict['logfile_name_w_abs_path'])
+          mrc = util.load_density_file(mrc_w_path)
+          args_dict[combi] = estimate_ORGXY_now(args_dict, str(ORGXY), mrc.data)
         ORGXY_end_time = time.time()
-  
         write_this = util.show_time("Estimation of ORGX_ORGY", ORGXY_start_time, ORGXY_end_time)
         util.flog(write_this, args_dict['logfile_name_w_abs_path'])
         
-        print_this = str(ORGXY) + " is automatically estimated by AutoMicroED (e.g. " + str(args_dict[combi]) + ")"
+        print_this = str(ORGXY) + " is estimated by AutoMicroED (e.g. " + str(args_dict[combi]) + ")"
         util.flog(print_this, args_dict['logfile_name_w_abs_path'])
          
         print_this = "\t\t(tip) Enter \"bypass\" and hit enter key if a user wants to add current " + str(ORGXY) \
@@ -556,9 +438,12 @@ def run_xds(args_dict, mrc_w_path, output_folder_name):
       util.flog(write_this, args_dict['logfile_name_w_abs_path'])
     else: # For smv input folder, args_dict['sections'] != 1 (could be 120)
       combi = (ORGXY, str(mrc_wo_path_wo_ext)) 
-      print (f"combi:{combi}") 
       
       if (combi not in args_dict):
+        print_this = "(note)  AutoMicroED doesn't see " + str(ORGXY) + " in a user-provided args_file."
+        print_this = print_this + "\n\t\t\t\tTherefore, it will estimate " + str(ORGXY) + " using matplotlib."
+        util.flog(print_this, args_dict['logfile_name_w_abs_path'])
+
         print_this = "\tsmv_folder:" + str(mrc_w_path)
         util.flog(print_this, args_dict['logfile_name_w_abs_path'])
 
@@ -573,7 +458,16 @@ def run_xds(args_dict, mrc_w_path, output_folder_name):
         input_smv_file_wo_ext_wo_path_w_4_question_marks = input_smv_file_wo_ext_wo_path[:-5] + "_????"
         combi = (ORGXY, str(input_smv_file_wo_ext_wo_path_w_4_question_marks))
 
-        args_dict[combi] = estimate_ORGX_ORGY_with_ImageMagick(args_dict, str(ORGXY), input_smv_file)
+        print_this = "\tA smv file that will be used to estimate " + str(ORGXY) + ": " + str(input_smv_file)
+        util.flog(print_this, args_dict['logfile_name_w_abs_path'])
+
+        args_dict[combi] = estimate_ORGXY_for_smv(args_dict, str(ORGXY), input_smv_file)
+
+      else:
+        print_this = str(combi) + " is already specified from a user provided args_file."
+        util.flog(print_this, args_dict['logfile_name_w_abs_path'])
+      write_this = str(ORGXY) + " to write into XDS.INP: " + str(args_dict[combi])
+      util.flog(write_this, args_dict['logfile_name_w_abs_path'])
   ##### <end> assign ORGX/ORGY in XDS.INP
 
   
@@ -921,11 +815,11 @@ def XDS_default(args_dict, mrc_wo_path, output_folder_name, xds_kind):
       f_out.write(write_this)
     elif (line[:18] == "DETECTOR_DISTANCE="):
       if 'd_calibrated' not in args_dict:
-        print (f"args_dict['sections']:{args_dict['sections']}")
+        #print (f"args_dict['sections']:{args_dict['sections']}")
         # tutorial -> 120
         # smv only -> 120
         
-        print (f"mrc_wo_path_wo_ext:{mrc_wo_path_wo_ext}")
+        #print (f"mrc_wo_path_wo_ext:{mrc_wo_path_wo_ext}")
         # smv only -> 170629merged
 
         if (int(args_dict['sections']) != 1):
@@ -933,11 +827,11 @@ def XDS_default(args_dict, mrc_wo_path, output_folder_name, xds_kind):
         else:
           combi_d_calibrated = ('d_calibrated', str(mrc_wo_path_wo_ext_w_4_question_marks))
         
-        print (f"combi_d_calibrated:{combi_d_calibrated}")
+        #print (f"combi_d_calibrated:{combi_d_calibrated}")
         # tutorial -> ('d_calibrated', '165749merged')
         # smv only -> ('d_calibrated', '170629merged')
 
-        print (f"args_dict:{args_dict}")
+        #print (f"args_dict:{args_dict}")
         write_this = "DETECTOR_DISTANCE=" + str(args_dict[combi_d_calibrated]) + "\n"
       else:
         write_this = "DETECTOR_DISTANCE=" + str(args_dict['d_calibrated']) + "\n"
@@ -1196,30 +1090,15 @@ def XDS_default(args_dict, mrc_wo_path, output_folder_name, xds_kind):
     
     else:
       f_out.write(line)
-    '''# Krios False
-       # Whether the data comes from Krios
-       # If Irina's assumption that all PNNL_Krios uses 1024 is correct, it doesn't matter whether this option (Krios) is True or False
-       # As of June/2021, this parameter becomes obsolete
-    '''
   
   if (args_dict['extra_xds_option'] == ""):
-    print (f"mrc_wo_path_wo_ext:{mrc_wo_path_wo_ext}")
-    #112002
-
     combi = ('EXCLUDE_DATA_RANGE', str(mrc_wo_path_wo_ext)) #mrc_wo_path has .mrc extension
-
-    print (f"combi:{combi}")
-    #('EXCLUDE_DATA_RANGE', '112002')
 
     if (combi in args_dict.keys()):
       write_this = str(args_dict[combi]) + "\n"
       f_out.write(write_this)
 
-    print (f"mrc_wo_path_wo_ext_w_4_question_marks:{mrc_wo_path_wo_ext_w_4_question_marks}")
-    
     combi = ('EXCLUDE_DATA_RANGE', str(mrc_wo_path_wo_ext_w_4_question_marks))
-
-    print (f"combi:{combi}")
 
     if (combi in args_dict.keys()):
       write_this = str(args_dict[combi]) + "\n"
