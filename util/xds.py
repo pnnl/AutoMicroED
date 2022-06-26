@@ -1,9 +1,10 @@
+import codecs, glob, math, os, random, shutil, subprocess, sys, time
 from datetime import datetime as dt
-import codecs, glob, os, random, shutil, subprocess, sys, time
 import matplotlib.image as mpimg
 import mrcfile
 import numpy as np
 import pandas as pd
+from scipy.ndimage import gaussian_filter
 import util
 
 home_dir_path = os.path.expanduser("~")
@@ -77,11 +78,11 @@ def add_DELPHI_10(logfile_name_w_abs_path):
 ############# end of def add_DELPHI_10()
 
 
-def estimate_ORGXY_now(args_dict, ORGX_ORGY, pixel_in_2D):
+def estimate_ORGXY_by_beamstop(args_dict, ORGX_ORGY, pixel_in_2D):
   half = int(args_dict['NX'])/2   # 1024.0
 
-  lower_limit = half*0.925 # 947.2
-  upper_limit = half*1.075 # 1100.8
+  lower_limit = half*0.95 
+  upper_limit = half*1.05 
 
   df = pd.DataFrame(columns=['x', 'y', 'pixel'])
   df_mrc_data = pd.DataFrame(pixel_in_2D)
@@ -92,13 +93,14 @@ def estimate_ORGXY_now(args_dict, ORGX_ORGY, pixel_in_2D):
       if (y < lower_limit) or (y > upper_limit):
         continue
       
-      pixel = return_pixel_including_neighbors(df_mrc_data, x, y, 40)
-      '''
-      estimation with 25 neighbor (df): 1057.1/1019 (82=38+44) took 36 sec
-      estimation with 40 neighbor (df): 1051/1019 (=+44) took 37 sec
-      estimation with 50 neighbor (df): 1049.1/1023.0 (78=30+48) took 38 sec
-      estimation with 100 neighbor (df): 1061/1060.0 (134=49+85) took 42 sec
-      estimation with 500 neighbor (df): 987.25/1061 took 1.7 min'''
+      pixel = return_pixel_including_neighbors(df_mrc_data, x, y, 100)
+
+      # estimation with 25 neighbor (df): 1057.1/1019 (82=38+44) took 36 sec
+      # estimation with 40 neighbor (df): 1051/1019 (=+44) took 37 sec
+      # estimation with 50 neighbor (df): 1049.1/1023.0 (78=30+48) took 38 sec
+      # estimation with 100 neighbor (df): 1061/1060.0 (134=49+85) took 42 sec
+      # estimation with 500 neighbor (df): 987.25/1061 took 1.7 min
+
 
       df_to_add = pd.DataFrame({"x":[x],
                                 "y":[y],
@@ -106,24 +108,314 @@ def estimate_ORGXY_now(args_dict, ORGX_ORGY, pixel_in_2D):
       df = df.append(df_to_add, ignore_index=True)
 
   df_sorted = df.sort_values(by=['pixel'])
-  df_top_candidate = df_sorted[:20]
+  #print (f"df_sorted:{df_sorted}")
+  # -> lower values (61540, black) come first
+  # -> higher values (95867, white) come later
+
+  #print (df_sorted.shape)
+  # for /gpustorage/MicroEDProc/SMP/carb030221/2021-03-02-152943/152943merged.mrcs 
+  #-> (23409, 3)
+  
+  
+
+  #df_top_candidate = df_sorted[:20]
+  #-> resulted in 1048.3 x 1019.0
+
+  #df_top_candidate = df_sorted[:100]
+  # -> resulted in 1048.05 x 1018.9
+
+  df_top_candidate = df_sorted[:5000]
+
+  # half -> 1024 x 1024 
+  # old way -> 1058 x 1023
+  # new way -> 1048.3 x 1019.0
+
   ORGX = df_top_candidate['x'].mean()
   ORGY = df_top_candidate['y'].mean()
 
   ORGX = round(ORGX, 1)
-  ORGX = (ORGX + half)/2
   print (f"ORGX:{ORGX}") # 1050
 
-  ORGY = (ORGY + half)/2
   ORGY = round(ORGY, 1)
   print (f"ORGY:{ORGY}") # 1024
+
+
+  #1024 x 1024 has nothing to do with true orgxy
+
   if (ORGX_ORGY == "ORGX"):
     print (f"ORGX:{ORGX}")
     return ORGX
   else:
     print (f"ORGY:{ORGY}")
     return ORGY
-############ end of def estimate_ORGXY_now(ORGX_ORGY, mrc_w_path, logfile_name_w_abs_path):
+############ end of def estimate_ORGXY_by_beamstop(ORGX_ORGY, mrc_w_path, logfile_name_w_abs_path):
+
+
+
+# def return_pixel_including_neighbors(df_mrc_data, x, y, pad):
+#   summed_pixel = df_mrc_data.iloc[x-pad:x+pad, y-pad:y+pad].sum()
+#   pixel = np.mean(summed_pixel)
+#   pixel = round(pixel, 2)
+#   return pixel
+# # end of def return_pixel_including_neighbors(img, x, y):
+
+
+def return_pixel_including_neighbors_wo_df(pixel_in_2D, x, y, pad):
+  pixels_w_neighbor = pixel_in_2D[x-pad:x+pad, y-pad:y+pad]
+  np.savetxt("pixel_in_2D_part.csv", pixels_w_neighbor, delimiter=',')
+  
+  pixel_w_neighbor = np.mean(pixels_w_neighbor)
+
+  return round(float(pixel_w_neighbor),2)
+# end of def return_pixel_including_neighbors_wo_df(pixel_in_2D):
+
+
+'''
+def estimate_ORGXY_by_center_circle(args_dict, ORGX_ORGY, pixel_in_2D):
+  #print (f"type(pixel_in_2D):{type(pixel_in_2D)}")
+  #<class 'numpy.memmap'>
+
+
+  csv_filename = 'pixel_in_2D_raw.csv'
+  np.savetxt(csv_filename, pixel_in_2D[824:1224, 824:1224], delimiter=',')
+
+
+  half = int(int(args_dict['NX'])/2)   # 1024
+
+  # pixel_in_2D = pixel_in_2D[int(half*0.80):int(half*1.20), int(half*0.80):int(half*1.20)]
+
+
+
+
+  ######### <begin> blur
+  # the higher sigma, the more blurred/exaggerated
+  sigma = 5
+  
+  pixel_in_2D = gaussian_filter(pixel_in_2D, sigma=sigma)
+
+  #png_filename = 'pixel_in_2D_sigma_' + str(sigma) + '.png'
+  #mpimg.imsave(png_filename, pixel_in_2D)
+  
+  #print (f"type(pixel_in_2D):{type(pixel_in_2D)}")
+  #<class 'numpy.ndarray'>
+
+  #csv_filename = png_filename[:-4] + ".csv"
+  #np.savetxt(csv_filename, pixel_in_2D[824:1224, 824:1224], delimiter=',')
+
+
+  mean_ = round(float(np.mean(pixel_in_2D)),2)
+  print (f"np.mean(pixel_in_2D):{mean_}")  #20.84
+  
+  std_ = round(float(np.std(pixel_in_2D)),2)
+  print (f"np.std(pixel_in_2D):{std_}") # 81.9
+  
+  ######### <end> blur
+
+  
+  #print (f"pixel_in_2D.shape:{pixel_in_2D.shape}")
+  #(2048, 2048)
+
+  
+  #print (f"pixel_in_2D[half,half]:{pixel_in_2D[half,half]}") # darkest, 16.0
+  #print (f"pixel_in_2D[775, 974]:{pixel_in_2D[775, 974]}") # gray, 73.0
+  #print (f"pixel_in_2D[1031,1078]:{pixel_in_2D[1031,1078]}") # brightest, 118.0
+  #-> the brighter -> larger pixel value
+  
+  #goal: find pixel variance region that decreases (e.g. toward darker)
+  radial_distance_max = int(int(args_dict['NX'])/4)   # 512
+  radial_distance_increment = int(int(args_dict['NX'])/400)   # 5
+  print (f"radial_distance_increment:{radial_distance_increment}")
+
+  ## <begin> find brighter (higher pixel value) region (e.g. find variances that are significantly negative)
+  threshold_variance = -10
+  padding = 5
+
+  pixel_center = round(return_pixel_including_neighbors_wo_df(pixel_in_2D, half, half, padding),2)
+  print (f"pixel_center:{pixel_center}") # sigma=5 -> 109.43
+
+  #North
+  for radial_distance in range(0, radial_distance_max, radial_distance_increment):
+    print (f"\nnew x, y:{half},{half+radial_distance}")
+
+    pixel_new      = round((return_pixel_including_neighbors_wo_df(pixel_in_2D, half, half+radial_distance, padding)),2)
+    print (f"pixel_new:{pixel_new}")
+    
+    variance_in_North = round((pixel_center - pixel_new),2)
+    print (f"variance_in_North:{variance_in_North}")
+
+    if (variance_in_North < threshold_variance): # using var < -30 results too many
+      radial_distance_when_var_negative_N = radial_distance
+      print (f"radial_distance_when_var_negative_N:{radial_distance_when_var_negative_N}") # 10 
+      break
+
+
+  
+  #South
+  for radial_distance in range(0, radial_distance_max, radial_distance_increment):
+    print (f"\nnew x, y:{half},{half-radial_distance}")
+
+    pixel_new      = round(return_pixel_including_neighbors_wo_df(pixel_in_2D, half, half-radial_distance, padding),2)
+    print (f"pixel_new:{pixel_new}")
+
+    variance_in_South = round((pixel_center - pixel_new),2)
+    if (variance_in_South < threshold_variance):
+
+      print (f"variance_in_South:{variance_in_South}")
+      radial_distance_when_var_negative_S = radial_distance
+      
+      break
+
+  #West
+  for radial_distance in range(0, radial_distance_max, radial_distance_increment):
+    variance_in_West = pixel_in_2D[half, half] - pixel_in_2D[half-radial_distance, half]
+    if (variance_in_West < threshold_variance):
+      print (f"\nnew x, y:{half-radial_distance},{half}")
+      
+      print (f"pixel_in_2D[half, half]:{pixel_in_2D[half, half]}")
+      print (f"pixel_in_2D[half-radial_distance, half]:{pixel_in_2D[half-radial_distance, half]}")
+      print (f"variance_in_West:{variance_in_West}")
+
+      radial_distance_when_var_negative_W = radial_distance
+      print (f"radial_distance_when_var_negative_W:{radial_distance_when_var_negative_W}") # 5
+      break
+    
+  ## <end> find brighter region (e.g. find all variances are negative)
+
+
+############ end of def estimate_ORGXY_by_center_circle(ORGX_ORGY, mrc_w_path, logfile_name_w_abs_path):
+'''
+
+
+def estimate_ORGXY_by_middle_circle(args_dict, ORGX_ORGY, pixel_in_2D):
+  #print (f"type(pixel_in_2D):{type(pixel_in_2D)}")
+  #<class 'numpy.memmap'>
+
+
+  csv_filename = 'pixel_in_2D_raw.csv'
+  np.savetxt(csv_filename, pixel_in_2D[824:1224, 824:1224], delimiter=',')
+
+
+  half = int(int(args_dict['NX'])/2)   # 1024
+
+  # pixel_in_2D = pixel_in_2D[int(half*0.80):int(half*1.20), int(half*0.80):int(half*1.20)]
+
+
+
+
+  ######### <begin> blur
+  # the higher sigma, the more blurred/exaggerated
+  sigma = 5
+  
+  pixel_in_2D = gaussian_filter(pixel_in_2D, sigma=sigma)
+
+  #png_filename = 'pixel_in_2D_sigma_' + str(sigma) + '.png'
+  #mpimg.imsave(png_filename, pixel_in_2D)
+  
+  #print (f"type(pixel_in_2D):{type(pixel_in_2D)}")
+  #<class 'numpy.ndarray'>
+
+  #csv_filename = png_filename[:-4] + ".csv"
+  #np.savetxt(csv_filename, pixel_in_2D[824:1224, 824:1224], delimiter=',')
+
+
+  mean_ = round(float(np.mean(pixel_in_2D)),2)
+  print (f"np.mean(pixel_in_2D):{mean_}")  #20.84
+  
+  std_ = float(np.std(pixel_in_2D))
+  print (f"np.std(pixel_in_2D):{round(std_,2)}") # 81.9
+  
+  print (f"np.max(pixel_in_2D):{round(float(np.max(pixel_in_2D)),2)}")
+  print (f"np.min(pixel_in_2D):{round(float(np.min(pixel_in_2D)),2)}")
+
+
+  print (f"np.median(pixel_in_2D):{round(float(np.median(pixel_in_2D)),2)}")
+
+  ######### <end> blur
+
+  # for smv (after sigma=5 gaussian)
+  # max: 0.95
+  # min: 0
+  # mean: 0.89
+  # median: 0.91
+  # std: 0.08
+  # cutoff = round((mean_ + (std_*7)),2) -> 1.45
+
+  # for mrc (after sigma=5 gaussian)
+  # max: 8370
+  # min: -25
+  # mean: 17
+  # median: 3.59
+  # std:  89
+  # cutoff = round((mean_ + (std_*7)),2) -> 642
+
+
+  if (args_dict["file_format_for_ORGXY"] == "mrc"):
+    #cutoff = round(np.max([float(np.mean(pixel_in_2D)), float(np.median(pixel_in_2D))]),2)
+    cutoff = round((mean_ + (std_*6)),2)
+
+  else: #smv
+    #cutoff = round(np.min([float(np.mean(pixel_in_2D)), float(np.median(pixel_in_2D))]),2)
+
+    #cutoff = round(np.min([float(np.mean(pixel_in_2D)), float(np.median(pixel_in_2D))]),2)
+    cutoff = round((mean_ - std_*6),2)
+
+  #print (f"type(cutoff):{type(cutoff)}") #<class 'float'>
+  print (f"cutoff:{cutoff}") # 986.93
+
+  # original
+  #pixel_in_2D_cut = np.where(pixel_in_2D > cutoff, pixel_in_2D, 0)
+
+  # more effective binary mask
+  if (args_dict["file_format_for_ORGXY"] == "mrc"):
+    pixel_in_2D_cut = np.where(pixel_in_2D > cutoff, 1000, 0)
+    csv_filename = 'pixel_in_2D_brighter_than_' + str(cutoff) + '.csv'
+
+  else: # for smv
+    pixel_in_2D_cut = np.where(pixel_in_2D < cutoff, 1000, 0)
+    csv_filename = 'pixel_in_2D_darker_than_' + str(cutoff) + '.csv'
+  
+  
+  #np.savetxt(csv_filename, pixel_in_2D[824:1224, 824:1224], delimiter=',')
+  np.savetxt(csv_filename, pixel_in_2D_cut, delimiter=',')
+
+  png_filename = csv_filename[:-4] + '.png'
+  mpimg.imsave(png_filename, pixel_in_2D_cut)
+
+  #print (pixel_in_2D_cut.shape) #(2048, 2048)
+
+  arr_ij = np.argwhere(pixel_in_2D_cut!=0)
+
+  arr_ij = np.where(arr_ij < (half*0.80), np.nan, arr_ij)
+  arr_ij = np.where(arr_ij > (half*1.2), np.nan, arr_ij)
+
+
+  #print (arr_ij.shape) # (874951, 2)
+  #print (arr_ij.shape) # (75751, 2)
+
+  
+  ORGX = np.nanmean(arr_ij[:,0])
+  ORGY = np.nanmean(arr_ij[:,1])
+  
+  #ORGX = ORGX - 60
+  ORGX = ORGX - int(int(args_dict['NX'])*0.03)
+
+  ORGX = round(ORGX,2)
+  ORGY = round(ORGY,2)
+  
+  if (math.isnan(ORGX) == True):
+    print_this = "ORGX is nan"
+    util.flog(print_this, args_dict['logfile_name_w_abs_path'])
+    util.flog_wo_print(print_this, args_dict['summary_logfile_name_w_abs_path'])
+    return -999
+
+  print (f"ORGX:{ORGX}")
+  print (f"ORGY:{ORGY}")
+  
+  if ORGX_ORGY == "ORGX":
+    return ORGX
+  else:
+    return ORGY
+############ end of def estimate_ORGXY_by_middle_circle(ORGX_ORGY, mrc_w_path, logfile_name_w_abs_path):
 
 
 def estimate_ORGXY_for_smv(args_dict, ORGXY, input_smv_file):
@@ -155,7 +447,8 @@ def estimate_ORGXY_for_smv(args_dict, ORGXY, input_smv_file):
   os.system(cmd)
 
   img = mpimg.imread(output_png_file)
-  return estimate_ORGXY_now(args_dict, str(ORGXY), img)
+  #return estimate_ORGXY_by_beamstop(args_dict, str(ORGXY), img)
+  return estimate_ORGXY_by_middle_circle(args_dict, str(ORGXY), img)
 #### end of def estimate_ORGXY_for_smv(args_dict, str(ORGXY), input_smv_file)    
 
 
@@ -384,6 +677,7 @@ def run_xds(args_dict, mrc_w_path, output_folder_name):
   ORG_list = ["ORGX", "ORGY"]
   for ORGXY in ORG_list:
     if (args_dict['input_list_has_mrc'] == True):
+      args_dict["file_format_for_ORGXY"] = "mrc"
 
       if (int(args_dict['sections']) == 1): # individual_mrc
         combi = (ORGXY, str(mrc_wo_path_wo_ext_w_4_question_marks)) # mrc_wo_path has .mrc/.mrcs extension
@@ -402,13 +696,39 @@ def run_xds(args_dict, mrc_w_path, output_folder_name):
           print_this = "\tA mrcs file that will be used to estimate " + str(ORGXY) + ": " + str(mrc_w_path)
           util.flog(print_this, args_dict['logfile_name_w_abs_path'])
           mrcs = util.load_density_file(mrc_w_path)
-          use_this_mrcs = int(mrcs.data.shape[0]/2)
-          args_dict[combi] = estimate_ORGXY_now(args_dict, str(ORGXY), mrcs.data[use_this_mrcs])
-        else:
+          
+          
+          # Irina prefers to use 3 images and average results
+
+          use_this_mrc_for_ORGXY = random.randint(3, int(int(mrcs.data.shape[0])/3))
+          print (f"use_this_mrc_for_ORGXY:{use_this_mrc_for_ORGXY}")
+
+          #print (f"len(mrcs.data):{len(mrcs.data)}") 183
+          #print (f"mrcs.data.shape:{mrcs.data.shape}") # (183, 2048, 2048)
+
+          #result1 = estimate_ORGXY_by_center_circle(args_dict, str(ORGXY), mrcs.data[use_this_mrc_for_ORGXY])
+          result1 = estimate_ORGXY_by_middle_circle(args_dict, str(ORGXY), mrcs.data[use_this_mrc_for_ORGXY])
+          #print (f"result1:{result1}") # 1018.8
+
+          use_this_mrc_for_ORGXY = random.randint( int(int(mrcs.data.shape[0])/3), 2*int(int(mrcs.data.shape[0])/3) )
+          print (f"use_this_mrc_for_ORGXY:{use_this_mrc_for_ORGXY}")
+          result2 = estimate_ORGXY_by_middle_circle(args_dict, str(ORGXY), mrcs.data[use_this_mrc_for_ORGXY])
+          #print (f"result2:{result2}")
+
+          use_this_mrc_for_ORGXY = random.randint(2*int(int(mrcs.data.shape[0])/3), int(mrcs.data.shape[0])-3)
+          print (f"use_this_mrc_for_ORGXY:{use_this_mrc_for_ORGXY}")
+          result3 = estimate_ORGXY_by_middle_circle(args_dict, str(ORGXY), mrcs.data[use_this_mrc_for_ORGXY])
+          #print (f"result3:{result3}")
+
+          args_dict[combi] = round(((result1 + result2 + result3)/3),2)
+          
+        else: # int(args_dict['sections']) = 1 e.g. individual mrc
           print_this = "\tA mrc file that will be used to estimate " + str(ORGXY) + ": " + str(mrc_w_path)
           util.flog(print_this, args_dict['logfile_name_w_abs_path'])
           mrc = util.load_density_file(mrc_w_path)
-          args_dict[combi] = estimate_ORGXY_now(args_dict, str(ORGXY), mrc.data)
+          #args_dict[combi] = estimate_ORGXY_by_beamstop(args_dict, str(ORGXY), mrc.data)
+          args_dict[combi] = estimate_ORGXY_by_middle_circle(args_dict, str(ORGXY), mrc.data)
+
         ORGXY_end_time = time.time()
         write_this = util.show_time("Estimation of ORGX_ORGY", ORGXY_start_time, ORGXY_end_time)
         util.flog(write_this, args_dict['logfile_name_w_abs_path'])
@@ -431,12 +751,14 @@ def run_xds(args_dict, mrc_w_path, output_folder_name):
               write_this = str(ORGXY) + " " + str(str(mrc_wo_path_wo_ext[:-5])) + "_???? " + str(args_dict[combi]) + " # generated by AutoMicroED\n"
             f_out.write(write_this)
             f_out.close()
-      else:
+      else: # combi in args_dict
         print_this = str(combi) + " is already specified from a user provided args_file."
         util.flog(print_this, args_dict['logfile_name_w_abs_path'])
       write_this = str(ORGXY) + " to write into XDS.INP: " + str(args_dict[combi])
       util.flog(write_this, args_dict['logfile_name_w_abs_path'])
     else: # For smv input folder, args_dict['sections'] != 1 (could be 120)
+      args_dict["file_format_for_ORGXY"] = "smv"
+
       combi = (ORGXY, str(mrc_wo_path_wo_ext)) 
       
       if (combi not in args_dict):
@@ -449,19 +771,65 @@ def run_xds(args_dict, mrc_w_path, output_folder_name):
 
         glob_this = os.path.join(mrc_w_path,"*.img")
         list_of_img = glob.glob(glob_this)  
-        random_index = random.randint(0,len(list_of_img)-1)
-        input_smv_file = list_of_img[random_index]
 
-        input_smv_file_wo_ext = os.path.splitext(input_smv_file)[0]
+        
+        random_index = random.randint(3, int(len(list_of_img)/3))
+        use_this_data_of_smv_file = list_of_img[random_index]
+
+        input_smv_file_wo_ext = os.path.splitext(use_this_data_of_smv_file)[0]
         input_smv_file_wo_ext_wo_path = os.path.basename(input_smv_file_wo_ext)
 
         input_smv_file_wo_ext_wo_path_w_4_question_marks = input_smv_file_wo_ext_wo_path[:-5] + "_????"
         combi = (ORGXY, str(input_smv_file_wo_ext_wo_path_w_4_question_marks))
 
-        print_this = "\tA smv file that will be used to estimate " + str(ORGXY) + ": " + str(input_smv_file)
+        print_this = "\tA smv file that will be used to estimate " + str(ORGXY) + ": " + str(use_this_data_of_smv_file)
         util.flog(print_this, args_dict['logfile_name_w_abs_path'])
 
-        args_dict[combi] = estimate_ORGXY_for_smv(args_dict, str(ORGXY), input_smv_file)
+        result1 = estimate_ORGXY_for_smv(args_dict, str(ORGXY), use_this_data_of_smv_file)
+        if (result1 == -999):
+          exit(1)
+
+
+
+        random_index = random.randint(int(len(list_of_img)/3), 2*int(len(list_of_img)/3))
+        use_this_data_of_smv_file = list_of_img[random_index]
+
+        input_smv_file_wo_ext = os.path.splitext(use_this_data_of_smv_file)[0]
+        input_smv_file_wo_ext_wo_path = os.path.basename(input_smv_file_wo_ext)
+
+        input_smv_file_wo_ext_wo_path_w_4_question_marks = input_smv_file_wo_ext_wo_path[:-5] + "_????"
+        combi = (ORGXY, str(input_smv_file_wo_ext_wo_path_w_4_question_marks))
+        
+        print_this = "\tA smv file that will be used to estimate " + str(ORGXY) + ": " + str(use_this_data_of_smv_file)
+        util.flog(print_this, args_dict['logfile_name_w_abs_path'])
+
+        result2 = estimate_ORGXY_for_smv(args_dict, str(ORGXY), use_this_data_of_smv_file)
+        if (result2 == -999):
+          exit(1)
+
+
+        random_index = random.randint(2*int(len(list_of_img)/3), int(len(list_of_img)-3))
+        use_this_data_of_smv_file = list_of_img[random_index]
+
+        input_smv_file_wo_ext = os.path.splitext(use_this_data_of_smv_file)[0]
+        input_smv_file_wo_ext_wo_path = os.path.basename(input_smv_file_wo_ext)
+
+        input_smv_file_wo_ext_wo_path_w_4_question_marks = input_smv_file_wo_ext_wo_path[:-5] + "_????"
+        combi = (ORGXY, str(input_smv_file_wo_ext_wo_path_w_4_question_marks))
+
+        print_this = "\tA smv file that will be used to estimate " + str(ORGXY) + ": " + str(use_this_data_of_smv_file)
+        util.flog(print_this, args_dict['logfile_name_w_abs_path'])
+
+        result3 = estimate_ORGXY_for_smv(args_dict, str(ORGXY), use_this_data_of_smv_file)
+        if (result3 == -999):
+          exit(1)
+
+
+
+        args_dict[combi] = round(((result1 + result2 + result3)/3),2)
+
+
+        
 
       else:
         print_this = str(combi) + " is already specified from a user provided args_file."
@@ -547,6 +915,7 @@ def run_xds(args_dict, mrc_w_path, output_folder_name):
   # however, xds_par got stuck 10/4/2021 maybe because that krios_gpu uses 20 cores for other jobs
   
   xds_kind_list = ["xds"]
+  #When krios_gpu uses ~50 cores at once (6/22/2022), xds_par silently got stuck
 
   for xds_kind in xds_kind_list:
     process = str(xds_kind) + " to process " + str(mrc_w_path)
@@ -767,7 +1136,16 @@ def run_xds_now(args_dict, prefix_of_file_name, xds_kind):
                '''
   
   # xds_kind is either xds or xds_par
-  command = str(xds_kind) + " > " + str(output_report_file_name)
+  #command = str(xds_kind) + " > " + str(output_report_file_name)
+
+  #command = "/opt/apps/XDS-INTEL64_Linux_x86_64/xds > " + str(output_report_file_name)
+  #command = "/opt/apps/XDS-INTEL64_Linux_x86_64/xds_par > " + str(output_report_file_name)
+
+  #command = "xds_par > " + str(output_report_file_name)
+  command = "xds > " + str(output_report_file_name)
+
+  
+
   # xds always runs XDS.INP, even if I typed xds XDS_all.INP
   util.flog(command, args_dict['logfile_name_w_abs_path'])
   

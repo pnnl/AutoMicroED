@@ -630,6 +630,37 @@ if (__name__ == "__main__") :
     write_this = show_time(process, start_time, end_time)
     flog(write_this, args_dict['logfile_name_w_abs_path'])
     flog_wo_print(write_this, args_dict['summary_logfile_name_w_abs_path'])
+
+
+
+
+    if ("outdir" not in args_dict):
+      print_this = "\noutdir is not defined in args_file\n"
+      print_this = print_this + "Either specify it args_file (for later AutoMicroED run)\n"
+      print_this = print_this + "or enter here (for example full_range_xds)."
+      print_this = print_this + "\n\tRefer (git repo)/templates/args_file/explanation_of_args.txt for an example of outdir"
+      print (print_this)
+
+
+      #Thread(target = wait_10_seconds).start()
+      answer = receive_from_user("outdir")    
+      if answer != None:
+        args_dict['outdir'] = answer
+        working_folder = args_dict['outdir'] + "_" + working_folder
+
+    else:
+      working_folder = args_dict['outdir'] + "_" + working_folder
+
+    # common regardless whether user specified outdir or not
+    os.chdir("..")
+    new_working_folder_abs_path = os.path.abspath(working_folder)
+
+    command = "mv " + str(working_folder_abs_path) + " " + str(new_working_folder_abs_path)
+    os.system(command)
+
+
+
+
     exit(1)
     
   dir_before_entering_each_SPACE_GROUP = os.getcwd()
