@@ -118,8 +118,13 @@ def args_file_parse(args_dict):
     splited_line = line.split()
     if (len(splited_line) < 2):
       continue
+    elif (splited_line[0] == "abs_tol_degree"):
+      args_dict['abs_tol_degree'] = splited_line[1]
+    elif (splited_line[0] == "abs_tol_spacing"):
+      args_dict['abs_tol_spacing'] = splited_line[1]
     elif (splited_line[0] == "B"):
       args_dict['B'] = splited_line[1]
+
     elif (splited_line[0] == "Bypass_generate_adx_inspection"):
       args_dict['Bypass_generate_adx_inspection'] = splited_line[1]
     elif (splited_line[0] == "Bypass_image_inspection"):
@@ -128,7 +133,7 @@ def args_file_parse(args_dict):
     elif (splited_line[0] == "Bypass_movie_inspection"):
       args_dict['Bypass_movie_inspection'] = splited_line[1]
     
-    # spot2pdb should run always (Sam)
+    
     
     elif (splited_line[0] == "ccp4_folder"):
       args_dict['ccp4_folder'] = splited_line[1]
@@ -244,6 +249,8 @@ def args_file_parse(args_dict):
       
     elif (splited_line[0] == "NX"):
       args_dict['NX'] = splited_line[1]
+      #print (f"NX:{args_dict['NX']}")
+      #2048
 
     elif (splited_line[0] == "NY"):
       args_dict['NY'] = splited_line[1]
@@ -307,6 +314,7 @@ def args_file_parse(args_dict):
     elif (splited_line[0] == "SPACE_GROUP_NUMBER"):
       args_dict['SPACE_GROUP_NUMBER'] = splited_line[1]
     
+    # spot2pdb should run always (Sam)
     elif (splited_line[0] == "spot2pdb_folder"):
       args_dict['spot2pdb_folder'] = splited_line[1]
 
@@ -486,7 +494,8 @@ def generate_each_similar_UNIT_CELL_folder(args_dict):
     beta = splited_UNIT_CELL_CONSTANTS[4]
     gamma = splited_UNIT_CELL_CONSTANTS[5] 
     new_folder_name = "a_" + str(a) + "_b_" + str(b) + "_c_" + str(c) + "_alpha_" + str(alpha) + "_beta_" + str(beta) + "_gamma_" + str(gamma)
-     
+    
+    ''' old-hardcoded
     close_enough_already = False
     for entry in os.scandir('.'):
       if not entry.name.startswith('.') and entry.is_dir():
@@ -508,7 +517,43 @@ def generate_each_similar_UNIT_CELL_folder(args_dict):
                     f_out.write(line)
                     f_out.close()
                     break
-        
+    ''' #old-hardcoded
+
+    # new-use argument
+    if ('abs_tol_spacing' not in args_dict.keys()):
+      print_this = "User didn't specify abs_tol_spacing (absolute tolerance of UNIT CELL spacing length) in input args_file. Therefore, 1 will be assigned by default."
+      flog(print_this, args_dict['logfile_name_w_abs_path'])
+      flog(print_this, args_dict['summary_logfile_name_w_abs_path'])
+      args_dict['abs_tol_spacing'] = 1
+    if ('abs_tol_degree' not in args_dict.keys()):
+      print_this = "User didn't specify abs_tol_degree (absolute tolerance of UNIT CELL angle degree) in input args_file. Therefore, 1 will be assigned by default."
+      flog(print_this, args_dict['logfile_name_w_abs_path'])
+      flog(print_this, args_dict['summary_logfile_name_w_abs_path'])
+      args_dict['abs_tol_degree'] = 1
+    close_enough_already = False
+    for entry in os.scandir('.'):
+      if not entry.name.startswith('.') and entry.is_dir():
+        a_from_folder_name = entry.name.split("_")[1]
+        abs_tol=float(args_dict['abs_tol_spacing'])
+        if (isclose(float(a_from_folder_name), float(a), abs_tol=abs_tol) == True):
+          b_from_folder_name = entry.name.split("_")[3]
+          if (isclose(float(b_from_folder_name), float(b), abs_tol=abs_tol) == True):
+            c_from_folder_name = entry.name.split("_")[5]
+            if (isclose(float(c_from_folder_name), float(c), abs_tol=abs_tol) == True):
+              alpha_from_folder_name = entry.name.split("_")[7]
+              abs_tol=float(args_dict['abs_tol_degree'])
+              if (isclose(float(alpha_from_folder_name), float(alpha), abs_tol=abs_tol) == True):
+                beta_from_folder_name = entry.name.split("_")[9]
+                if (isclose(float(beta_from_folder_name), float(beta), abs_tol=abs_tol) == True):
+                  gamma_from_folder_name = entry.name.split("_")[11]
+                  if (isclose(float(gamma_from_folder_name), float(gamma), abs_tol=abs_tol) == True):
+                    close_enough_already = True
+                    os.chdir(entry.name)
+                    f_out = codecs.open("For_this_SPACE_GROUP_and_UNIT_CELL_merge_these_HKL_by_xscale.txt", "a")
+                    f_out.write(line)
+                    f_out.close()
+                    break
+
     if (close_enough_already == False):
       os.mkdir(new_folder_name)
       os.chdir(new_folder_name)

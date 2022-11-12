@@ -37,6 +37,7 @@ def run_xscale_to_scale_after_xds(mrc_w_path, output_folder_name, args_dict):
   
   
   command = "xscale "
+  #command = "/opt/apps/XDS-INTEL64_Linux_x86_64/xscale "
   util.flog(command, args_dict['logfile_name_w_abs_path']) 
   os.system(command) # xscale takes 0.2 seconds, so no need of job launching
 
@@ -104,6 +105,7 @@ def run_xscale_to_merge(args_dict):
   util.flog(print_this, args_dict['logfile_name_w_abs_path'])
   
   command = ("xscale") # All users need to specify XDS/XSCALE in .bashrc's PATH
+  #command = ("/opt/apps/XDS-INTEL64_Linux_x86_64/xscale") # All users need to specify XDS/XSCALE in .bashrc's PATH
   util.flog(command, args_dict['logfile_name_w_abs_path'])
   os.system(command)
   

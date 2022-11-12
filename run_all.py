@@ -27,7 +27,8 @@ if (__name__ == "__main__") :
   if (len(args) < 2):
     print (explain_user_input)
     exit(1)
-    
+   
+  ''' 
   # this version check doesn't work if later sentences do not conform to python3
   if (str(sys.version[:1]) == "2"):
     print ("AutoMicroED is optimized with python3 rather than python2.\n\nTherefore, run")
@@ -41,7 +42,12 @@ if (__name__ == "__main__") :
 
     # "If a user uses pnnl_kriosgpu, \
     #       alias MicroED=\"/home/kimd999/bin/miniconda3/bin/python3.8 /gpustorage/automation/MicroED/Scripts/AutoMicroED/run_all.py\" works
-  
+  '''
+
+  if not hasattr(sys, "version_info") or sys.version_info < (3,7):
+    raise ValueError("Script requires Python 3.7 or higher!")
+
+
   today = datetime.now()
   time_now = today.strftime('%Y/%m/%d') + "/" + str(today.hour) + ":" + str(today.minute) + ":" + str(today.second)
   
@@ -102,6 +108,7 @@ if (__name__ == "__main__") :
     print_this = "args_dict after population:" + str(args_dict)
     flog(print_this, args_dict['logfile_name_w_abs_path'])
     flog_wo_print(print_this, args_dict['summary_logfile_name_w_abs_path'])
+    
   ############### <end> read args file and populate args_dict
 
 
@@ -159,11 +166,9 @@ if (__name__ == "__main__") :
         args_dict['NY'] = args_dict['columns']
         args_dict['sections'] = sections
         break
-
-      else:
+      else: # user provided .mrcs file
         break
     mrc_file_list_opened.close()
-  ############### <end> count columns, NX, NY, sections of the FIRST input mrc
 
   else: # if (args_dict['input_list_has_mrc'] = False # so user's file is smv/img
     pass
@@ -188,6 +193,9 @@ if (__name__ == "__main__") :
         exit(1)
     # <end> check whether a user specified ORGX, ORGY
     '''
+  ############### <end> count columns, NX, NY, sections of the FIRST input mrc
+
+
 
   ############### <begin> check xds_par, xscale, xdsconv path
   try:
@@ -218,6 +226,7 @@ if (__name__ == "__main__") :
     flog(write_this, args_dict['logfile_name_w_abs_path'])
     exit(1)
   ################ <end> check xds_par, xscale, xdsconv path
+  
   
   
   ################ <begin> check cad, f2mtz, shelxt, shelxl path
@@ -274,8 +283,8 @@ if (__name__ == "__main__") :
        ):
       check_movie_quality()
 
-    ############### <begin> args_dict['sections']) > 1
-    if (int(args_dict['sections']) > 1):
+    ############### <begin> args_dict['sections']) > 1 (e.g. mrcs input)
+    if (int(args_dict['sections']) > 1): 
 
       mrc_file_list_opened = codecs.open(list_of_mrc_file_or_smv_folder_w_abs_path, 'r')
       mrc_file_number = 0
@@ -290,88 +299,42 @@ if (__name__ == "__main__") :
         mrc_file_number = mrc_file_number + 1
         if (platform.system() == "Linux"):
           
-          if ('PNNL_HPC_Cascade_sbatch' not in args_dict.keys()) \
-              or (args_dict['PNNL_HPC_Cascade_sbatch'].upper() == "FALSE"):
-            mrc_file_basename = os.path.basename(mrc_file)
-            
-            intermediate_output_folder_name = os.path.splitext(mrc_file_basename)[0]
-            
-            os.mkdir(intermediate_output_folder_name)
-            os.chdir(intermediate_output_folder_name)
-            os.mkdir("xds")
-            os.mkdir("img")
-            os.chdir("img")
-      
-            per_each_mrc_smv_file_both_single_and_multiple_sections(args_dict, 
-                                                          mrc_w_path, 
-                                                          intermediate_output_folder_name)
+          mrc_file_basename = os.path.basename(mrc_file)
+          intermediate_output_folder_name = os.path.splitext(mrc_file_basename)[0]
+          
+          os.mkdir(intermediate_output_folder_name)
+          os.chdir(intermediate_output_folder_name)
+          os.mkdir("xds")
+          os.mkdir("img")
+          os.chdir("img")
+    
+          per_each_mrc_smv_file_both_single_and_multiple_sections(args_dict, 
+                                                        mrc_w_path, 
+                                                        intermediate_output_folder_name)
 
-            more_crystal_needed = xds_retrieve_UNIT_CELL_per_each_mrc_file_both_single_and_multiple_sections(args_dict, 
-                                                                      mrc_w_path, 
-                                                                      intermediate_output_folder_name)
+          more_crystal_needed = xds_retrieve_UNIT_CELL_per_each_mrc_file_both_single_and_multiple_sections(args_dict, 
+                                                                    mrc_w_path, 
+                                                                    intermediate_output_folder_name)
+          
+          if (more_crystal_needed == "failed"):
+            exit(1)
+          elif (more_crystal_needed == "CORRECT.LP not found"):
+            write_this = "[xds] CORRECT.LP not found even after many troubleshootings."
+            flog(write_this, args_dict['logfile_name_w_abs_path'])
+            flog_wo_print(write_this, args_dict['summary_logfile_name_w_abs_path'])
+          else:
+            write_this = "more_crystal_needed: " + str(more_crystal_needed)
+            flog(write_this, args_dict['logfile_name_w_abs_path'])
             
-            if (more_crystal_needed == "failed"):
-              exit(1)
-            elif (more_crystal_needed == "CORRECT.LP not found"):
-              write_this = "[xds] CORRECT.LP not found even after many troubleshootings."
+            if (more_crystal_needed == True):
+              write_this = "AutoMicroED will feed more mrcs file (if any)."
               flog(write_this, args_dict['logfile_name_w_abs_path'])
-              flog_wo_print(write_this, args_dict['summary_logfile_name_w_abs_path'])
-            else:
-              write_this = "more_crystal_needed: " + str(more_crystal_needed)
-              flog(write_this, args_dict['logfile_name_w_abs_path'])
-              
-              if (more_crystal_needed == True):
-                write_this = "AutoMicroED will feed more mrcs file (if any)."
-                flog(write_this, args_dict['logfile_name_w_abs_path'])
-            
-            os.chdir(path_before_opening_list_of_mrc_file_or_smv_folder)
-            
-            if (more_crystal_needed == False):
-              break
-          ######### end of args_dict['PNNL_HPC_Cascade_sbatch'].upper() == "FALSE")
-             
-          else: # (args_dict['PNNL_HPC_Cascade_sbatch'] == "True"):
-            number_of_sections_in_each_mrc_file = count_sections_in_each_mrc_file(mrc_w_path)
-            
-            if (int(number_of_sections_in_each_mrc_file) > 1):
-              mrc_file_basename = os.path.basename(mrc_file)
-              flog(write_this, args_dict['logfile_name_w_abs_path'])
-              
-              mrc_file_basename_splited_by_ = mrc_file_basename.split("_")
-              if (len(mrc_file_basename_splited_by_) == 1):
-                mrc_file_basename_splited_by_minus = mrc_file_basename.split("-")
-                intermediate_output_folder_name = mrc_file_basename_splited_by_minus[0]
-              else:
-                if (len(mrc_file_basename_splited_by_) > 1):
-                  intermediate_output_folder_name = mrc_file_basename_splited_by_[0]
-                else:
-                  mrc_file_basename_splited_by_ = mrc_file_basename.split(".mrcs")
-                  intermediate_output_folder_name = mrc_file_basename_splited_by_[0]
-        
-              os.mkdir(intermediate_output_folder_name)
-              os.chdir(intermediate_output_folder_name)
-              os.mkdir("xds")
-              os.mkdir("img")
-              os.chdir("img")
-
-              per_each_mrc_smv_file_both_single_and_multiple_sections(args_dict, 
-                                                          mrc_w_path, 
-                                                          intermediate_output_folder_name)
-              
-              more_crystal_needed = xds_retrieve_UNIT_CELL_per_each_mrc_file_both_single_and_multiple_sections(args_dict, 
-                                                                  mrc_w_path, 
-                                                                  intermediate_output_folder_name)
-              if (more_crystal_needed == "no CORRECT.LP found"):
-                flog("no CORRECT.LP found", args_dict['logfile_name_w_abs_path'])
-              else:
-                write_this = "more_crystal_needed: " + str(more_crystal_needed)
-                flog(write_this, args_dict['logfile_name_w_abs_path'])
-                
-              os.chdir(path_before_opening_list_of_mrc_file_or_smv_folder)
-              if (more_crystal_needed == False):
-                break
-          ######## end of else: # (args_dict['PNNL_HPC_Cascade_sbatch'] == "True"):
-
+          
+          os.chdir(path_before_opening_list_of_mrc_file_or_smv_folder)
+          
+          if (more_crystal_needed == False):
+            break
+          
         else: # macOS
           mrc_file_basename = os.path.basename(mrc_file)
           write_this = "mrc_file_basename:" + str(mrc_file_basename)
@@ -421,10 +384,10 @@ if (__name__ == "__main__") :
         
         print (print_this)
         exit(1)
-    ############### <end> args_dict['sections']) > 1
+    ############### <end>   args_dict['sections']) > 1 (e.g. mrcs input)
 
 
-    ############### <begin> single frame mrc
+    ############### <begin> single frame mrc (e.g. individual mrc)
     else: # (args_dict['sections']) == 1)
       mrc_file_number = 0
       mrc_file_or_smv_folder_opened = codecs.open(list_of_mrc_file_or_smv_folder_w_abs_path, 'r')
@@ -464,13 +427,13 @@ if (__name__ == "__main__") :
         splited_base_mrc_name2 = splited_base_mrc_name[0].split("_")
         image_num = int(splited_base_mrc_name2[len(splited_base_mrc_name2)-1])
         
-        if (image_num <= 3): # maybe Irina doesn't like to use first 3 images
+        if (image_num <= 3): # Irina doesn't like to use first 3 images
            continue
           
         mrc_file_basename = os.path.basename(mrc_w_path)
         intermediate_output_folder_name = mrc_file_basename[:-9]
         
-        # (devel) because of this, single frame mrc_file can be processed similarly as multi frame mrc_file
+        # (Note) because of this, single frame mrc_file can be processed similarly as multi frame mrc_file
         if (os.path.isdir(intermediate_output_folder_name) == False):
           os.mkdir(intermediate_output_folder_name)
           os.chdir(intermediate_output_folder_name)
@@ -534,13 +497,11 @@ if (__name__ == "__main__") :
         print_this = "xds needs to be re-ran with other approach/data."
         print (print_this)
         exit(1)
-    ############### <end> single frame mrc
+    ############### <end>   single frame mrc (e.g. individual mrc)
     
 
   else: # input_list_has_mrc == False (such as smv/img file)
-
     smv_folder_opened = codecs.open(list_of_mrc_file_or_smv_folder_w_abs_path, 'r')
-
     for each_smv_folder in smv_folder_opened:
       each_smv_folder = each_smv_folder.rstrip()
 
