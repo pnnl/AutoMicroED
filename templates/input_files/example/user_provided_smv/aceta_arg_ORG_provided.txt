@@ -47,6 +47,11 @@ TEST_RESOLUTION_RANGE 4 0.5
 Bypass_generate_adx_inspection True
 ######## <end> analysis after xds
 
+# Absolute tolerance of UNIT CELL spacing length/angle degree to merge
+# If not specified by user, default value of 1 will be used.
+abs_tol_spacing 1
+abs_tol_degree 1
+
 
 ######## <begin> phasing target
 protein FALSE

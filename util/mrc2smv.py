@@ -36,7 +36,7 @@ def prepare_d_calibrated(args_dict, output_folder_name):
   ############### <begin> distance
   print ("\n-d: sample-detector distance (mm).")
   
-  if (args_dict['input_list_has_mrc'] == False):
+  if (args_dict['input_list_has_mrc'] == False): #e.g. smv
     combi_d_calibrated = ('d_calibrated', str(mrc_wo_path_wo_ext))
   else:
     if (int(args_dict['sections']) > 1):

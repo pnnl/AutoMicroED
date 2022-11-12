@@ -1,2 +1,4 @@
+.DS_Store
+**/.DS_Store
 util/**/util.cpython-37.pyc
 util/util.pyc

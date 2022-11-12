@@ -11,7 +11,7 @@ convert_folder /opt/apps/from_magick/squashfs-root/usr/bin
 outdir smv
 
 ########## <begin> Basic information of input mrc
-columns 2048
+#columns 2048  # columns specification by user is not needed anymore
 sections 120
 ########## <end> Basic information of input mrc
 
@@ -34,8 +34,8 @@ Bypass_image_inspection True
 Bypass_spot2pdb_inspection False
 mutl_core_xds False
 least_completeness_overall 95
-NX 2048
-NY 2048
+#NX 2048 # NX specification is made automatically AutomicroED
+#NY 2048 # NY specification is made automatically AutomicroED
 ROTATION_AXIS -1 0 0
 SPACE_GROUP_NUMBER 0
 STARTING_ANGLE 165749merged -65
@@ -47,6 +47,13 @@ TEST_RESOLUTION_RANGE 4 0.5
 ######## <begin> analysis after xds
 Bypass_generate_adx_inspection True
 ######## <end> analysis after xds
+
+
+# Absolute tolerance of UNIT CELL spacing length/angle degree to merge
+# If not specified by user, default value of 1 will be used.
+abs_tol_spacing 1
+abs_tol_degree 1
+
 
 
 ######## <begin> phasing target

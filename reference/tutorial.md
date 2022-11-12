@@ -4,7 +4,7 @@
    - cd tutorial
       - mkdir mrc
    - (Download mrc)
-      - [from here](https://release.my.emsl.pnnl.gov/released_data/2299309)
+      - [from here](https://dx.doi.org/10.25582/data.2022-07.2566664/1882910)
    - ls $PWD/*.mrcs > aceta_mrc_tutorial.list
    - cp (AutoMicroED git repository)/templates/input_files/example/user_provided_mrcs/aceta_mrc_tutorial.list .
       - (For example, if a user did git clone at /home/powe385, then (AutoMicroED git repository) is /home/powe385/AutoMicroED)
